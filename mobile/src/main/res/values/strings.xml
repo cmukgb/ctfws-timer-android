@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">CMUKGB CtFwS Timer</string>
+
+    <string name="ctfws_gameend">Game\nEnd</string>
+    <string name="ctfws_gamestart">Game\nStart</string>
+    <string name="ctfws_jailbreak">Jailbreak %1$d</string>
+    <string name="ctfws_flags">%1$d Flags:</string>
+
+    <string name="header_gamestate">Game State:</string>
+    <string name="header_gametimeela">Game\nTime\nElapsed</string>
+    <string name="header_messages">Messages:</string>
+</resources>
