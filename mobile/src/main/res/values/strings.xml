@@ -13,6 +13,7 @@
     <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
 
+    <string name="menutext_about">About</string>
     <string name="menutext_mqtt">Set MQTT Server</string>
     <string name="menutext_mqtt_label">Server URI:</string>
 
@@ -23,4 +24,16 @@
     <string name="mqtt_subbed">Subscribed</string>
 
     <string name="string_null">&lt;&lt;null&gt;&gt;</string>
+
+    <string name="about_text"><![CDATA[
+        <center>
+          <a href="http://www.cmukgb.org/activities/ctfws.php">Capture The Flag With Stuff Rules</a>
+          <br/>
+          This project is open source under AGPLv3; see the
+            <a href="https://github.com/AcmeTensorToys/ctfws-android">GitHub Project Page</a>
+          <br/>
+          &#169; 2017 Nathaniel Wesley Filardo and others
+        </center>
+        ]]>
+    </string>
 </resources>

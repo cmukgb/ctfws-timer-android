@@ -1,5 +1,7 @@
 package com.acmetensortoys.ctfwstimer;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -189,6 +192,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean egg = false;
+    @SuppressLint({"SetTextI18n"})
+    public void onclick_gamestate(View v) {
+        TextView tv = (TextView) v;
+        if (egg) {
+            tv.setText(R.string.header_gamestate);
+        } else {
+            ((TextView) v).setText("DO NOT TAP ON GLASS");
+        }
+        egg = !egg;
+    }
+
+    // TODO should we be using onClick instead for routing?
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {
@@ -197,6 +213,9 @@ public class MainActivity extends AppCompatActivity {
                         StringSettingDialogFragment.newInstance(
                                 R.layout.server_dialog, R.id.server_text, "server");
                 d.show(getSupportFragmentManager(),"serverdialog");
+                return true;
+            case R.id.menu_about :
+                startActivity(new Intent(this, AboutActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(mi);

@@ -9,13 +9,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Seems like a reasonable idea? -->
-    <!--
-    <uses-permission android:name="android.permission.VIBRATE" />
-    -->
-
+    <!--     <uses-permission android:name="android.permission.VIBRATE" /> -->
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_shield_1"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -28,6 +25,8 @@
         </activity>
 
         <service android:name="org.eclipse.paho.android.service.MqttService" />
+
+        <activity android:name=".AboutActivity"></activity>
     </application>
 
 </manifest>
