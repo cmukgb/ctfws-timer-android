@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // We'll use this common callback object for our subscriptions below
-    final IMqttActionListener subal = new IMqttActionListener() {
+    private final IMqttActionListener subal = new IMqttActionListener() {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.d("CtFwS", "Sub OK: " + asyncActionToken);
@@ -56,12 +56,47 @@ public class MainActivity extends AppCompatActivity {
             Log.e("CtFws", "Sub Fail: " + asyncActionToken, exception);
         }
     };
+    // And this handles making our subscriptions for us
+    private final MqttCallbackExtended mqttcb = new MqttCallbackExtended() {
+        @Override
+        public void connectComplete(boolean reconnect, String serverURI) {
+            Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
+            try {
+                String p = "ctfws/game/";
+                mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
+                mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
+                mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
+                mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
+                mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
+                setServerStateText(R.string.mqtt_subbed);
+            } catch (MqttException e) {
+                Log.e("CtFwS", "Exn Sub", e);
+            }
+        }
+
+        @Override
+        public void connectionLost(Throwable cause) {
+            Log.d("CtFwS", "Conn Lost", cause);
+            setServerStateText(R.string.mqtt_disconn);
+        }
+
+        @Override
+        public void messageArrived(String topic, MqttMessage message) throws Exception {
+            Log.d("CtFwS", "Message(Generic) " + topic + " : '" + message + "'" );
+        }
+
+        @Override
+        public void deliveryComplete(IMqttDeliveryToken token) {
+            // Unused, as we never publish
+            Log.d("CtFwS", "Delivery OK");
+        }
+    };
 
     private synchronized void doMqtt(@Nullable String server) {
         // Hang up on an existing connection, if we have one
         synchronized (this) {
             if (mMqc != null) {
-                try { mMqc.disconnect(); } catch (MqttException me) { ; }
+                try { mMqc.disconnect(); } catch (MqttException me) { /* NOP? */ }
             }
             mMqc = null;
             mCgs.configured = false;
@@ -70,51 +105,15 @@ public class MainActivity extends AppCompatActivity {
 
         // If that's all we were told to do, we're done
         if (server == null) {
-            Log.d("CtFwS", "doMqtt null");
             mTvSU.setText(R.string.string_null);
             return;
         }
-        Log.d("CtFwS", "doMqtt not null:" + server);
 
         mTvSU.setText(server);
 
         // Make our MQTT client and grab callbacks on *everything in sight*
         final MqttAndroidClient mqc = new MqttAndroidClient(this,server,mqttClientId);
-        mqc.setCallback(new MqttCallbackExtended() {
-            @Override
-            public void connectComplete(boolean reconnect, String serverURI) {
-                Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
-                try {
-                    String p = "ctfws/game/";
-                    mqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
-                    mqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
-                    mqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
-                    mqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
-                    mqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
-                    setServerStateText(R.string.mqtt_subbed);
-                } catch (MqttException e) {
-                    Log.e("CtFwS", "Exn Sub", e);
-                }
-            }
-
-            @Override
-            public void connectionLost(Throwable cause) {
-                Log.d("CtFwS", "Conn Lost", cause);
-                setServerStateText(R.string.mqtt_disconn);
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                Log.d("CtFwS", "Message(Generic) " + topic + " : '" + message + "'" );
-            }
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-                // Unused, as we never publish
-                Log.d("CtFwS", "Delivery OK");
-            }
-        });
-
+        mqc.setCallback(mqttcb);
 
         // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
         // subscription requests, which of course have *yet more* callbacks, which
@@ -124,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
             mco.setCleanSession(true);
             mco.setAutomaticReconnect(true);
             mco.setKeepAliveInterval(180); // seconds
+
+            synchronized (this) {
+                if (BuildConfig.DEBUG && mMqc != null) { throw new AssertionError(); }
+                mMqc = mqc;
+            }
 
             mqc.connect(mco, null, new IMqttActionListener() {
                 @Override
@@ -144,15 +148,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (MqttException e) {
             Log.e("CtFwS", "Conn Exn", e);
         }
-
-        synchronized (this) {
-            if (BuildConfig.DEBUG && mMqc != null) { throw new AssertionError(); }
-            mMqc = mqc;
-        }
     }
 
     // Must hold strongly since Android only holds weakly once registered.
-    private SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
+    private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
