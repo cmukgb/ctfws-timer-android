@@ -250,13 +250,10 @@ class CtFwSDisplay {
         });
     }
 
-    void notifyMessage(String m) {
-        lastMsgTimeMS = System.currentTimeMillis();
-
+    void notifyMessage(long ts, String m) {
         final StringBuffer sb = new StringBuffer();
-        long ts = lastMsgTimeMS/1000 - mCgs.startT;
-        if (!mCgs.configured || ts < 0) { ts = 0; }
-        sb.append(DateUtils.formatElapsedTime(ts));
+        long td = (ts == 0) ? 0 : (mCgs.configured) ? ts - mCgs.startT : 0;
+        sb.append(DateUtils.formatElapsedTime(td));
         sb.append(": ");
         sb.append(m);
         sb.append("\n");

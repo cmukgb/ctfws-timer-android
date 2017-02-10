@@ -81,19 +81,41 @@ class CtFwSCallbacksMQTT {
         }
     };
 
+    private long lastMsgTimestamp = 0;
+    private void onMessageCommon(String str) {
+        Scanner s = new Scanner(str);
+        try {
+            long t = s.nextLong();
+            // If there is no configuration, assume the message is new enough
+            // If there *is* a configuration, check the time.
+            if ((!mCgs.configured  || t >= mCgs.startT) && (lastMsgTimestamp <= t)) {
+                s.useDelimiter("\\z");
+                lastMsgTimestamp = t;
+                mCdl.notifyMessage(t, s.next().trim());
+            }
+        } catch (NoSuchElementException nse) {
+            // Maybe they forgot a time stamp.  That's not ideal, but... fake it?
+            lastMsgTimestamp = System.currentTimeMillis()/1000;
+            mCdl.notifyMessage(lastMsgTimestamp, str);
+            lastMsgTimestamp -= 30; // XXX Back off a bit, for time sync reasons
+        }
+    }
+
     IMqttMessageListener onMessage = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            Log.d("CtFwS", "Message(Broadcast): " + message);
-            mCdl.notifyMessage(message.toString());
+            String str = message.toString();
+            Log.d("CtFwS", "Message(Broadcast): " + str);
+            onMessageCommon(str);
         }
     };
 
     IMqttMessageListener onPlayerMessage = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            Log.d("CtFwS", "Message(Players): " + message);
-            mCdl.notifyMessage(message.toString());
+            String str = message.toString();
+            Log.d("CtFwS", "Message(Players): " + str);
+            onMessageCommon(str);
         }
     };
 }
