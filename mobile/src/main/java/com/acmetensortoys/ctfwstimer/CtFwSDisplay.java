@@ -59,13 +59,7 @@ class CtFwSDisplay {
 
         // Clear the mesage log if it looks like it's a new game in play
         if (lastMsgTimeMS < mCgs.startT * 1000) {
-            final TextView msgs = (TextView) (mAct.findViewById(R.id.msgs));
-            msgs.post(new Runnable() {
-                @Override
-                public void run() {
-                    msgs.setText("");
-                }
-            });
+            clearMsgs();
         }
 
         mHandler.removeCallbacks(mProber);
@@ -242,6 +236,16 @@ class CtFwSDisplay {
             @Override
             public void run() {
                 msgs.setText(sb);
+            }
+        });
+    }
+
+    void clearMsgs() {
+        final TextView msgs = (TextView) (mAct.findViewById(R.id.msgs));
+        msgs.post(new Runnable() {
+            @Override
+            public void run() {
+                msgs.setText("");
             }
         });
     }

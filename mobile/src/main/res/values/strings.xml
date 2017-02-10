@@ -9,4 +9,18 @@
     <string name="header_gamestate">Game State:</string>
     <string name="header_gametimeela">Game\nTime\nElapsed</string>
     <string name="header_messages">Messages:</string>
+
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
+
+    <string name="menutext_mqtt">Set MQTT Server</string>
+    <string name="menutext_mqtt_label">Server URI:</string>
+
+    <string name="mqtt_header">Connection Metadata:</string>
+    <string name="mqtt_state_label">Server State:</string>
+    <string name="mqtt_conn">Connected</string>
+    <string name="mqtt_disconn">Disconnected</string>
+    <string name="mqtt_subbed">Subscribed</string>
+
+    <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 </resources>
