@@ -26,6 +26,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+
 public class MainActivity extends AppCompatActivity {
 
     static private final String mqttClientId = MqttClient.generateClientId();

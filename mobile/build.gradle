@@ -36,6 +36,8 @@ dependencies {
     })
     wearApp project(':wear')
 
+    compile project(":lib")
+
     compile('org.eclipse.paho:org.eclipse.paho.android.service:1.1.1') {
         exclude module: 'support-v4'
     }

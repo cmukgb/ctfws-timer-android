@@ -9,6 +9,8 @@ import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+
 // TODO nwf is bad at UI design; someone who isn't him should improve this
 
 class CtFwSDisplay {
