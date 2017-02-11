@@ -19,7 +19,7 @@
 
     <string name="mqtt_header">Connection Metadata:</string>
     <string name="mqtt_state_label">Server State:</string>
-    <string name="mqtt_conn">Connected</string>
+    <string name="mqtt_conn">Connected but not subscribed</string>
     <string name="mqtt_disconn">Disconnected</string>
     <string name="mqtt_subbed">Subscribed</string>
 

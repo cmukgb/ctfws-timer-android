@@ -179,7 +179,9 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:id="@+id/connmeta"
+        android:onClick="onclick_connmeta">
 
         <TextView
             android:layout_width="match_parent"

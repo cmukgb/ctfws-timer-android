@@ -17,11 +17,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.android.service.MqttTraceHandler;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -30,7 +32,6 @@ import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
 
 public class MainActivity extends AppCompatActivity {
 
-    static private final String mqttClientId = MqttClient.generateClientId();
     private MqttAndroidClient mMqc;
 
     private final CtFwSGameState mCgs = new CtFwSGameState();
@@ -46,6 +47,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /*
+    // Trace MQTT state
+    private final MqttTraceHandler mqttth = new MqttTraceHandler() {
+        @Override
+        public void traceDebug(String tag, String message) {
+            Log.d("CtFwSMqtt:"+tag,message);
+        }
+
+        @Override
+        public void traceError(String tag, String message) {
+            Log.e("CtFwSMqtt:"+tag,message);
+        }
+
+        @Override
+        public void traceException(String tag, String message, Exception e) {
+            Log.e("CtFwSMqtt:"+tag,message,e);
+        }
+    };
+    */
     // We'll use this common callback object for our subscriptions below
     private final IMqttActionListener subal = new IMqttActionListener() {
         @Override
@@ -78,8 +98,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void connectionLost(Throwable cause) {
-            Log.d("CtFwS", "Conn Lost", cause);
+            Log.d("CtFwS", "Conn Lost: " + cause, cause);
             setServerStateText(R.string.mqtt_disconn);
+
         }
 
         @Override
@@ -93,12 +114,35 @@ public class MainActivity extends AppCompatActivity {
             Log.d("CtFwS", "Delivery OK");
         }
     };
+    // And this handles yet more about connecting
+    private final IMqttActionListener mqttal = new IMqttActionListener() {
+        @Override
+        public void onSuccess(IMqttToken asyncActionToken) {
+            Log.d("CtFwS", "Conn OK 1");
+            setServerStateText(R.string.mqtt_conn);
+            mCdl.clearMsgs();
+        }
+
+        @Override
+        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+            Log.e("CtFws", "Conn Fail", exception);
+            setServerStateText(R.string.mqtt_disconn);
+            mCdl.clearMsgs();
+        }
+    };
 
     private synchronized void doMqtt(@Nullable String server) {
         // Hang up on an existing connection, if we have one
         synchronized (this) {
             if (mMqc != null) {
-                try { mMqc.disconnect(); } catch (MqttException me) { /* NOP? */ }
+                if (mMqc.isConnected()) {
+                    try {
+                        mMqc.disconnect();
+                        Log.d("CtFwS", "domqtt disconnected");
+                    } catch (MqttException me) {
+                        Log.e("CtFwS", "domqtt disconn exn", me);
+                    }
+                }
             }
             mMqc = null;
             mCgs.configured = false;
@@ -114,8 +158,18 @@ public class MainActivity extends AppCompatActivity {
         mTvSU.setText(server);
 
         // Make our MQTT client and grab callbacks on *everything in sight*
-        final MqttAndroidClient mqc = new MqttAndroidClient(this,server,mqttClientId);
+        //
+        // XXX For reasons beyond my understanding, we have to use a new client ID every time
+        // or we won't resubscribe.  I think this is github issue eclipse/paho.mqtt.android#170
+        // but heavens only knows.  Whatever, this works for the moment and doesn't leave
+        // stragglers on my server as far as I can tell.
+        MqttAndroidClient mqc = new MqttAndroidClient(this,server,MqttClient.generateClientId());
         mqc.setCallback(mqttcb);
+        /*
+        // Debugging aid: trace the paho client internals
+        mqc.setTraceCallback(mqttth);
+        mqc.setTraceEnabled(true);
+        */
 
         // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
         // subscription requests, which of course have *yet more* callbacks, which
@@ -125,28 +179,12 @@ public class MainActivity extends AppCompatActivity {
             mco.setCleanSession(true);
             mco.setAutomaticReconnect(true);
             mco.setKeepAliveInterval(180); // seconds
-
             synchronized (this) {
                 if (BuildConfig.DEBUG && mMqc != null) { throw new AssertionError(); }
                 mMqc = mqc;
             }
-
-            mqc.connect(mco, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.d("CtFwS", "Conn OK 1");
-                    setServerStateText(R.string.mqtt_conn);
-                    mCdl.clearMsgs();
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.e("CtFws", "Conn Fail", exception);
-                    setServerStateText(R.string.mqtt_disconn);
-                    mCdl.clearMsgs();
-                }
-            });
-
+            mqc.connect(mco, null, mqttal);
+            Log.d("CtFwS", "Connect dispatched");
         } catch (MqttException e) {
             Log.e("CtFwS", "Conn Exn", e);
         }
@@ -193,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Every good application needs an easter egg
     private boolean egg = false;
     @SuppressLint({"SetTextI18n"})
     public void onclick_gamestate(View v) {
@@ -203,6 +242,11 @@ public class MainActivity extends AppCompatActivity {
             ((TextView) v).setText("DO NOT TAP ON GLASS");
         }
         egg = !egg;
+    }
+
+    // Kick the mqtt layer on a click on the status stuff
+    public void onclick_connmeta(View v) {
+        doMqtt(getPreferences(MODE_PRIVATE).getString("server",null));
     }
 
     // TODO should we be using onClick instead for routing?
