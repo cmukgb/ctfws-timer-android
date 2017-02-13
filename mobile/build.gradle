@@ -2,18 +2,18 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "24.0.3"
+    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.acmetensortoys.ctfwstimer"
         minSdkVersion 19
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -21,11 +21,21 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    flavorDimensions "play"
+    productFlavors {
+        noplay {
+            dimension "play"
+        }
+        play {
+            dimension "play"
+        }
+    }
 }
 
 repositories {
     maven {
-        url "https://repo.eclipse.org/content/repositories/paho-releases/"
+        url "https://repo.eclipse.org/content/repositories/paho-snapshots/"
     }
 }
 
@@ -38,11 +48,15 @@ dependencies {
 
     compile project(":lib")
 
-    compile('org.eclipse.paho:org.eclipse.paho.android.service:1.1.1') {
+    compile 'com.android.support:appcompat-v7:25.1.1'
+    compile 'com.android.support:support-v4:25.1.1'
+
+    playCompile 'com.google.android.gms:play-services:10.0.1'
+
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.1-SNAPSHOT'
+    compile('org.eclipse.paho:org.eclipse.paho.android.service:1.1.2-SNAPSHOT') {
         exclude module: 'support-v4'
     }
-    compile 'com.android.support:appcompat-v7:25.1.1'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
-    compile 'com.android.support:support-v4:25.1.1'
+
     testCompile 'junit:junit:4.12'
 }

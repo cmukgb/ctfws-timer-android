@@ -5,40 +5,43 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
 
-// TODO nwf is bad at UI design; someone who isn't him should improve this
+import java.util.List;
 
-class CtFwSDisplay {
+import static android.view.View.INVISIBLE;
+
+// TODO nwf is bad at UI design; someone who isn't him should improve this
+class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     final private Activity mAct;
     final private Handler mHandler;
-    final private CtFwSGameState mCgs;
 
-    private long lastMsgTimeMS = 0;
-
-    CtFwSDisplay(Activity a, Handler h, CtFwSGameState cgs) {
+    CtFwSDisplayLocal(Activity a, Handler h) {
         mAct = a;
         mHandler = h;
-        mCgs = cgs;
     }
 
-    final private Runnable mProber = new Runnable() {
-        @Override
-        public void run() {
-            notifyGameState();
-        }
-    };
+    private Runnable mProber;
 
-    void notifyGameState() {
+    @Override
+    public void onCtFwSConfigure(final CtFwSGameState gs) {
         final long nowMS = System.currentTimeMillis();
         long nowET = SystemClock.elapsedRealtime(); // Chronometer timebase
         final long tbcf = nowMS - nowET; // time base correction factor ("when we booted"-ish)
 
-        final CtFwSGameState.Now now = mCgs.getNow(nowMS / 1000);
+        final CtFwSGameState.Now now = gs.getNow(nowMS / 1000);
+        final Runnable prober = new Runnable() {
+            @Override
+            public void run() {
+                onCtFwSConfigure(gs);
+            }
+        };
+
 
         Log.d("CtFwS", "Display game state; nowMS=" + nowMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
 
@@ -49,9 +52,12 @@ class CtFwSDisplay {
 
             doReset();
 
-            mHandler.removeCallbacks(mProber);
+            if (mProber != null) {
+                mHandler.removeCallbacks(mProber);
+            }
             if (!now.stop) {
-                mHandler.postDelayed(mProber, mCgs.startT*1000 - nowMS);
+                mProber = prober;
+                mHandler.postDelayed(mProber, now.roundStart*1000 - nowMS);
             }
 
             return;
@@ -59,12 +65,11 @@ class CtFwSDisplay {
 
         // Otherwise, it's game on!
 
-        // Clear the mesage log if it looks like it's a new game in play
-        if (lastMsgTimeMS < mCgs.startT * 1000) {
-            clearMsgs();
-        }
-
+        // Schedule a callback around the time of the next round; if we're early,
+        // that's fine, we'll schedule it again.  If we're late, it'll be glitchy,
+        // but that's fine.
         mHandler.removeCallbacks(mProber);
+        mProber = prober;
         mHandler.postDelayed(mProber, now.roundEnd * 1000 - nowMS);
 
         {
@@ -74,7 +79,7 @@ class CtFwSDisplay {
                 public void run() {
                     if (now.round == 0) {
                         tv_jb.setText(R.string.ctfws_gamestart);
-                    } else if (now.round == mCgs.rounds) {
+                    } else if (now.round == gs.getRounds()) {
                         tv_jb.setText(R.string.ctfws_gameend);
                     } else {
                         tv_jb.setText(
@@ -89,11 +94,7 @@ class CtFwSDisplay {
                 @Override
                 public void run() {
                     pb_jb.setIndeterminate(false);
-                    if (now.round == 0) {
-                        pb_jb.setMax(mCgs.setupD - 1);
-                    } else {
-                        pb_jb.setMax(mCgs.roundD - 1);
-                    }
+                    pb_jb.setMax((int)(now.roundEnd - now.roundStart));
                     pb_jb.setProgress(0);
                 }
             });
@@ -102,11 +103,11 @@ class CtFwSDisplay {
             ch_jb.post(new Runnable() {
                 @Override
                 public void run() {
-                    ch_jb.setBase(now.roundEnd * 1000 - tbcf);
+                    ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
                     ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                         @Override
                         public void onChronometerTick(Chronometer c) {
-                            pb_jb.setProgress((int)(now.roundEnd - System.currentTimeMillis()/1000) - 1);
+                            pb_jb.setProgress((int)(now.roundEnd - System.currentTimeMillis()/1000));
                         }
                     });
                     ch_jb.start();
@@ -119,7 +120,7 @@ class CtFwSDisplay {
                 @Override
                 public void run() {
                     pb_gp.setIndeterminate(false);
-                    pb_gp.setMax(mCgs.rounds * mCgs.roundD - 1);
+                    pb_gp.setMax(gs.getComputedGameDuration());
                     pb_gp.setProgress(0);
                 }
             });
@@ -128,14 +129,15 @@ class CtFwSDisplay {
             ch_gp.post(new Runnable() {
                 @Override
                 public void run() {
-                    ch_gp.setBase((mCgs.startT + mCgs.setupD) * 1000 - tbcf);
+                    ch_gp.setBase(gs.getFirstRoundStartT() * 1000 - tbcf);
                     ch_gp.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                         @Override
                         public void onChronometerTick(Chronometer c) {
                             pb_gp.setProgress((int)(System.currentTimeMillis()/1000
-                                    - mCgs.startT - mCgs.setupD));
+                                    - gs.getFirstRoundStartT()));
                         }
                     });
+                    ch_gp.setVisibility(View.VISIBLE);
                     ch_gp.start();
                 }
             });
@@ -144,9 +146,7 @@ class CtFwSDisplay {
             pb_gp.post(new Runnable() {
                 @Override
                 public void run() {
-                    pb_gp.setIndeterminate(false);
-                    pb_gp.setMax(mCgs.rounds * mCgs.roundD - 1);
-                    pb_gp.setProgress(0);
+                    pb_gp.setIndeterminate(true);
                 }
             });
 
@@ -154,9 +154,8 @@ class CtFwSDisplay {
             ch_gp.post(new Runnable() {
                 @Override
                 public void run() {
-                    ch_gp.setBase(nowMS - tbcf);
-                    ch_gp.setOnChronometerTickListener(null);
                     ch_gp.stop();
+                    ch_gp.setVisibility(INVISIBLE);
                 }
             });
         }
@@ -166,8 +165,7 @@ class CtFwSDisplay {
                 @Override
                 public void run() {
                     tv_flags.setText(
-                            String.format(mAct.getResources().getString(R.string.ctfws_flags),
-                                    mCgs.flagsTotal));
+                            String.format(mAct.getResources().getString(R.string.ctfws_flags), gs.flagsTotal));
                 }
             });
         }
@@ -192,11 +190,9 @@ class CtFwSDisplay {
             ch.post(new Runnable() {
                 @Override
                 public void run() {
-                    ch.setOnChronometerTickListener(null);
-                    ch.setBase(SystemClock.elapsedRealtime());
                     ch.stop();
-                }
-            });
+                    ch.setVisibility(View.INVISIBLE);
+                }});
         }
         {
             final ProgressBar pb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
@@ -218,16 +214,17 @@ class CtFwSDisplay {
         }
     }
 
-    void notifyFlags() {
+    @Override
+    public void onCtFwSFlags(CtFwSGameState gs) {
         // TODO: This stinks
 
         final StringBuffer sb = new StringBuffer();
-        if (mCgs.configured) {
-            if (mCgs.flagsVisible) {
+        if (gs.isConfigured()) {
+            if (gs.flagsVisible) {
                 sb.append("r=");
-                sb.append(mCgs.flagsRed);
+                sb.append(gs.flagsRed);
                 sb.append(" y=");
-                sb.append(mCgs.flagsYel);
+                sb.append(gs.flagsYel);
             } else {
                 sb.append("r=? y=?");
             }
@@ -242,30 +239,36 @@ class CtFwSDisplay {
         });
     }
 
-    void clearMsgs() {
-        final TextView msgs = (TextView) (mAct.findViewById(R.id.msgs));
-        msgs.post(new Runnable() {
-            @Override
-            public void run() {
-                msgs.setText("");
-            }
-        });
-    }
+    @Override
+    public void onCtFwSMessage(CtFwSGameState gs, List<CtFwSGameState.Msg> msgs) {
+        final TextView msgstv = (TextView)(mAct.findViewById(R.id.msgs));
+        int s = msgs.size();
 
-    void notifyMessage(long ts, String m) {
-        final StringBuffer sb = new StringBuffer();
-        long td = (ts == 0) ? 0 : (mCgs.configured) ? ts - mCgs.startT : 0;
-        sb.append(DateUtils.formatElapsedTime(td));
-        sb.append(": ");
-        sb.append(m);
-        sb.append("\n");
+        if (s == 0) {
+            msgstv.post(new Runnable() {
+                @Override
+                public void run() {
+                    msgstv.setText("");
+                }
+            });
+        } else {
 
-        final TextView msgs = (TextView)(mAct.findViewById(R.id.msgs));
-        msgs.post(new Runnable() {
-            @Override
-            public void run() {
-                msgs.append(sb);
-            }
-        });
+            CtFwSGameState.Msg m = msgs.get(s - 1);
+
+            long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;
+
+            final StringBuffer sb = new StringBuffer();
+            sb.append(DateUtils.formatElapsedTime(td));
+            sb.append(": ");
+            sb.append(m.msg);
+            sb.append("\n");
+
+            msgstv.post(new Runnable() {
+                @Override
+                public void run() {
+                    msgstv.append(sb);
+                }
+            });
+        }
     }
 }

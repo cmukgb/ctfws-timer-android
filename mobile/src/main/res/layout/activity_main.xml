@@ -132,7 +132,8 @@
                 <Chronometer
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ch_gameProgress" />
+                    android:id="@+id/ch_gameProgress"
+                    android:visibility="invisible" />
 
             </TableRow>
 

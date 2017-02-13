@@ -17,13 +17,11 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.android.service.MqttTraceHandler;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -35,8 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private MqttAndroidClient mMqc;
 
     private final CtFwSGameState mCgs = new CtFwSGameState();
-    private CtFwSDisplay mCdl; // set in onCreate
     private CtFwSCallbacksMQTT mCtfwscbs ; // set in onCreate
+
+    private MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
     private TextView mTvSU; // set in onCreate
     private TextView mTvSS; // set in onCreate
@@ -120,14 +119,12 @@ public class MainActivity extends AppCompatActivity {
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.d("CtFwS", "Conn OK 1");
             setServerStateText(R.string.mqtt_conn);
-            mCdl.clearMsgs();
         }
 
         @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
             Log.e("CtFws", "Conn Fail", exception);
             setServerStateText(R.string.mqtt_disconn);
-            mCdl.clearMsgs();
         }
     };
 
@@ -145,8 +142,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             mMqc = null;
-            mCgs.configured = false;
-            mCdl.notifyGameState();
+            mCgs.deconfigure();
         }
 
         // If that's all we were told to do, we're done
@@ -206,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String defserver = "tcp://nwf1.xen.prgmr.com:1883";
+        String defserver = "tcp://ctfws-mqtt.ietfng.org:1883";
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -214,8 +210,12 @@ public class MainActivity extends AppCompatActivity {
         mTvSU = (TextView) findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = (TextView) findViewById(R.id.tv_mqtt_state);
 
-        mCdl = new CtFwSDisplay(this, new Handler(), mCgs);
-        mCtfwscbs = new CtFwSCallbacksMQTT(mCdl, mCgs);
+        CtFwSDisplayLocal mCdl = new CtFwSDisplayLocal(this, new Handler());
+        mCgs.registerObserver(mCdl);
+
+        mabh.onCreate(mCgs);
+
+        mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
 
         SharedPreferences sp = getPreferences(MODE_PRIVATE);
         if (sp.getString("server", null) == null) {

@@ -1,29 +1,25 @@
 package com.acmetensortoys.ctfwstimer.lib;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
 
 public class CtFwSGameState {
-    public boolean configured;
-    public long startT;     // NTP seconds for game start
-    public int  setupD;
-    public int  rounds;
-    public int  roundD;
-    public long endT = 0;   // NTP seconds for game end (if >= startT)
 
-    public int  flagsTotal;
-    public boolean flagsVisible = false;
-    public int  flagsRed = 0;
-    public int  flagsYel = 0;
+    // Game time
 
-    public void setFlags(boolean visible) {
-        flagsVisible = visible;
-    }
-    public void setFlags(int red, int yel) {
-        flagsRed = red; flagsYel = yel;
-    }
+    private boolean configured = false;
+    private long startT;     // NTP seconds for game start
+    private int  setupD;
+    private int  rounds;
+    private int  roundD;
+    private long endT = 0;   // NTP seconds for game end (if >= startT)
 
-    public void mqttConfigMessage(String st) {
+    public void fromMqttConfigMessage(String st) {
         String tm = st.trim();
         switch (tm) {
             case "none":
@@ -43,29 +39,33 @@ public class CtFwSGameState {
                 }
                 break;
         }
-    }
-    public void mqttFlagsMessage(String st) {
-        String tm = st.trim();
-        switch(tm) {
-            case "?":
-                this.setFlags(false);
-                break;
-            default:
-                Scanner s = new Scanner(tm);
-                try {
-                    this.setFlags(true);
-                    this.setFlags(s.nextInt(),s.nextInt());
-                } catch (NumberFormatException e) {
-                    this.setFlags(false);
-                }
+        if (!isMessageTimeWithin(lastMsgTimestamp)) {
+            msgs.clear();
+            notifyMessages();
         }
+        notifyConfig();
+    }
+    public String toMqttConfigMessage() {
+        if (!configured) {
+            return "none";
+        }
+
+        return String.format(Locale.ROOT, "%d %d %d %d %d", startT, setupD, rounds, roundD, flagsTotal);
+    }
+    public void deconfigure() {
+        this.configured = false;
+        notifyConfig();
+    }
+    public void setEndT(long endT) {
+        this.endT = endT;
+        notifyConfig();
     }
 
     public class Now {
         public String rationale = null; // null if game is in play, otherwise other fields invalid
+        public boolean stop = false;
         public int round = 0;  // 0 for setup
         public long roundStart = 0, roundEnd = 0; // NTP seconds
-        public boolean stop = false;
     }
     public Now getNow(long now) {
         Now res = new Now();
@@ -77,6 +77,7 @@ public class CtFwSGameState {
             res.stop = true;
         } else if (now <= startT) {
             res.rationale = "Start time in the future!";
+            res.roundStart = startT;
         }
         if (res.rationale != null) {
             return res;
@@ -100,4 +101,123 @@ public class CtFwSGameState {
         res.round += 1;
         return res;
     }
+    public boolean isConfigured(){
+        return configured;
+    }
+    public long getStartT() { return startT; }
+    public long getFirstRoundStartT() { return startT + setupD; }
+    public int getRounds() { return rounds; }
+    public int getComputedGameDuration() { return rounds * roundD ; }
+
+    // Leaves off the natural endT comparison so that messages can be posted after the
+    // game ends and still count as part of this one (i.e. still be displayed).
+    private boolean isMessageTimeWithin(long time) {
+        return !configured  || time >= startT;
+    }
+
+    // Game score
+
+    public int  flagsTotal;
+    public boolean flagsVisible = false;
+    public int  flagsRed = 0;
+    public int  flagsYel = 0;
+
+    public void fromMqttFlagsMessage(String st) {
+        String tm = st.trim();
+        switch(tm) {
+            case "?":
+                flagsVisible = false;
+                break;
+            default:
+                Scanner s = new Scanner(tm);
+                try {
+                    flagsVisible = true;
+                    int red = s.nextInt();
+                    int yel = s.nextInt();
+                    flagsRed = red;
+                    flagsYel = yel;
+                } catch (NumberFormatException e) {
+                    flagsVisible = false;
+                }
+        }
+        notifyFlags();
+    }
+    public String toMqttFlagsMessage() {
+        if (!configured || !flagsVisible) {
+            return "?";
+        }
+
+        return String.format(Locale.ROOT, "%d %d", flagsRed, flagsYel);
+    }
+
+    // Informative messages handling
+
+    public class Msg {
+        public long when;
+        public String msg;
+
+        Msg(long when, String msg) {
+            this.when = when;
+            this.msg  = msg;
+        }
+    }
+    private List<Msg> msgs = new ArrayList<>();
+    private long lastMsgTimestamp;
+
+    public void onNewMessage(String str) {
+        Scanner s = new Scanner(str);
+        long t;
+
+        try {
+            t = s.nextLong();
+        } catch (NoSuchElementException nse) {
+            // Maybe they forgot a time stamp.  That's not ideal, but... fake it?
+            // XXX Back off a bit, for time sync reasons
+            lastMsgTimestamp = System.currentTimeMillis()/1000 - 30;
+            msgs.add(new Msg(lastMsgTimestamp, str));
+            notifyMessages();
+            return;
+        }
+
+        // If there is no configuration, assume the message is new enough
+        // If there *is* a configuration, check the time.
+        if (isMessageTimeWithin(t) && (lastMsgTimestamp <= t)) {
+            s.useDelimiter("\\z");
+            lastMsgTimestamp = t;
+            msgs.add(new Msg(lastMsgTimestamp, s.next().trim()));
+            notifyMessages();
+        }
+    }
+
+    // Observer interface
+
+    public interface Observer {
+        void onCtFwSConfigure(CtFwSGameState game);
+        void onCtFwSFlags(CtFwSGameState game);
+        void onCtFwSMessage(CtFwSGameState game, List<Msg> msgs);
+
+    }
+    final private Set<Observer> mObsvs = new HashSet<>();
+    private void notifyFlags() {
+        synchronized(this) {
+            for (Observer o : mObsvs) { o.onCtFwSFlags(this); }
+        }
+    }
+    private void notifyMessages() {
+        synchronized(this) {
+            for (Observer o : mObsvs) { o.onCtFwSMessage(this, msgs); }
+        }
+    }
+    private void notifyConfig() {
+        synchronized(this) {
+            for (Observer o : mObsvs) { o.onCtFwSConfigure(this); }
+        }
+    }
+    public void registerObserver(Observer d) {
+        synchronized(this) { mObsvs.add(d); }
+    }
+    public void unregisterObserver(Observer d) {
+        synchronized(this) { mObsvs.remove(d); }
+    }
+
 }

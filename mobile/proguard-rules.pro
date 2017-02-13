@@ -15,8 +15,3 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
-
-# Work around some Paho packaging warnings that manifest as errors.
-# See http://github.com/eclipse/paho.mqtt.android/issues/79
--keepattributes InnerClasses
--dontoptimize
