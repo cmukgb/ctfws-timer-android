@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -18,15 +19,17 @@ public class StringSettingDialogFragment extends DialogFragment
     private final static String ARG_LRES_IX = "lres"; // layout id
     private final static String ARG_VRES_IX = "vres"; // text view id
     private final static String ARG_PREF_IX = "pref"; // preference name
+    private final static String ARG_DEFL_IX = "def";   // optional default
 
     private TextView mTv;
 
-    public static StringSettingDialogFragment newInstance(int lres, int vres, String pref) {
+    public static StringSettingDialogFragment newInstance(int lres, int vres, String pref, String def) {
         StringSettingDialogFragment ssdf = new StringSettingDialogFragment();
         Bundle args = new Bundle();
         args.putInt   (ARG_LRES_IX, lres);
         args.putInt   (ARG_VRES_IX, vres);
         args.putString(ARG_PREF_IX, pref);
+        if (def != null) { args.putString(ARG_DEFL_IX, def); }
         ssdf.setArguments(args);
         return ssdf;
     }
@@ -39,7 +42,7 @@ public class StringSettingDialogFragment extends DialogFragment
         View v = li.inflate(a.getInt(ARG_LRES_IX), null);
 
         mTv = (TextView)v.findViewById(a.getInt(ARG_VRES_IX));
-        final SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.registerOnSharedPreferenceChangeListener(this);
         onSharedPreferenceChanged(sp,a.getString(ARG_PREF_IX));
 
@@ -56,13 +59,34 @@ public class StringSettingDialogFragment extends DialogFragment
                         // NOP
                     }
                 });
+
+        final String def = a.getString(ARG_DEFL_IX);
+        if (def != null) {
+            adb.setNeutralButton(R.string.dialog_reset, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mTv.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mTv.setText(def);
+                        }
+                    });
+                }
+            });
+        }
+
         return adb.create();
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sp, String p) {
+    public void onSharedPreferenceChanged(final SharedPreferences sp, final String p) {
         if (p != null && getArguments().getString(ARG_PREF_IX).equals(p)) {
-            mTv.setText(sp.getString(p, ""));
+            mTv.post(new Runnable() {
+                @Override
+                public void run() {
+                    mTv.setText(sp.getString(p, ""));
+                }
+            });
         }
     }
 }

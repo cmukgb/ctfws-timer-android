@@ -1,44 +1,60 @@
 package com.acmetensortoys.ctfwstimer;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-
-import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
-
 public class MainActivity extends AppCompatActivity {
 
-    private MqttAndroidClient mMqc;
-
-    private final CtFwSGameState mCgs = new CtFwSGameState();
-    private CtFwSCallbacksMQTT mCtfwscbs ; // set in onCreate
+    // TODO surely this belongs somewhere else
+    private static final String defserver = "tcp://ctfws-mqtt.ietfng.org:1883";
 
     private MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
-    private TextView mTvSU; // set in onCreate
-    private TextView mTvSS; // set in onCreate
+    private MainService.LocalBinder mSrvBinder; // set once connection completed
+    private MainService.Observer mSrvObs = new MainService.Observer() {
+        @Override
+        public void onMqttServerChanged(MainService.LocalBinder b, final String sURL) {
+            mTvSU.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (sURL == null) {
+                        mTvSU.setText(R.string.string_null);
+                    } else {
+                        mTvSU.setText(sURL);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onMqttServerEvent(MainService.LocalBinder b, MainService.MqttServerEvent mse) {
+            switch(mse) {
+                case MSE_CONN: setServerStateText(R.string.mqtt_conn); break;
+                case MSE_DISCONN: setServerStateText(R.string.mqtt_disconn); break;
+                case MSE_SUB: setServerStateText(R.string.mqtt_subbed);
+            }
+        }
+    };
+
+    private CtFwSDisplayLocal mCdl; // set in onStart
+    private TextView mTvSU; // set in onStart
+    private TextView mTvSS; // set in onStart
     private void setServerStateText(@StringRes final int resid) {
         mTvSS.post(new Runnable() {
             @Override
@@ -46,178 +62,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /*
-    // Trace MQTT state
-    private final MqttTraceHandler mqttth = new MqttTraceHandler() {
-        @Override
-        public void traceDebug(String tag, String message) {
-            Log.d("CtFwSMqtt:"+tag,message);
-        }
-
-        @Override
-        public void traceError(String tag, String message) {
-            Log.e("CtFwSMqtt:"+tag,message);
-        }
-
-        @Override
-        public void traceException(String tag, String message, Exception e) {
-            Log.e("CtFwSMqtt:"+tag,message,e);
-        }
-    };
-    */
-    // We'll use this common callback object for our subscriptions below
-    private final IMqttActionListener subal = new IMqttActionListener() {
-        @Override
-        public void onSuccess(IMqttToken asyncActionToken) {
-            Log.d("CtFwS", "Sub OK: " + asyncActionToken);
-        }
-
-        @Override
-        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-            Log.e("CtFws", "Sub Fail: " + asyncActionToken, exception);
-        }
-    };
-    // And this handles making our subscriptions for us
-    private final MqttCallbackExtended mqttcb = new MqttCallbackExtended() {
-        @Override
-        public void connectComplete(boolean reconnect, String serverURI) {
-            Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
-            try {
-                String p = "ctfws/game/";
-                mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
-                mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
-                mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
-                mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
-                mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
-                setServerStateText(R.string.mqtt_subbed);
-            } catch (MqttException e) {
-                Log.e("CtFwS", "Exn Sub", e);
-            }
-        }
-
-        @Override
-        public void connectionLost(Throwable cause) {
-            Log.d("CtFwS", "Conn Lost: " + cause, cause);
-            setServerStateText(R.string.mqtt_disconn);
-
-        }
-
-        @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
-            Log.d("CtFwS", "Message(Generic) " + topic + " : '" + message + "'" );
-        }
-
-        @Override
-        public void deliveryComplete(IMqttDeliveryToken token) {
-            // Unused, as we never publish
-            Log.d("CtFwS", "Delivery OK");
-        }
-    };
-    // And this handles yet more about connecting
-    private final IMqttActionListener mqttal = new IMqttActionListener() {
-        @Override
-        public void onSuccess(IMqttToken asyncActionToken) {
-            Log.d("CtFwS", "Conn OK 1");
-            setServerStateText(R.string.mqtt_conn);
-        }
-
-        @Override
-        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-            Log.e("CtFws", "Conn Fail", exception);
-            setServerStateText(R.string.mqtt_disconn);
-        }
-    };
-
-    private synchronized void doMqtt(@Nullable String server) {
-        // Hang up on an existing connection, if we have one
-        synchronized (this) {
-            if (mMqc != null) {
-                if (mMqc.isConnected()) {
-                    try {
-                        mMqc.disconnect();
-                        Log.d("CtFwS", "domqtt disconnected");
-                    } catch (MqttException me) {
-                        Log.e("CtFwS", "domqtt disconn exn", me);
-                    }
-                }
-            }
-            mMqc = null;
-            mCgs.deconfigure();
-        }
-
-        // If that's all we were told to do, we're done
-        if (server == null) {
-            mTvSU.setText(R.string.string_null);
-            return;
-        }
-
-        mTvSU.setText(server);
-
-        // Make our MQTT client and grab callbacks on *everything in sight*
-        //
-        // XXX For reasons beyond my understanding, we have to use a new client ID every time
-        // or we won't resubscribe.  I think this is github issue eclipse/paho.mqtt.android#170
-        // but heavens only knows.  Whatever, this works for the moment and doesn't leave
-        // stragglers on my server as far as I can tell.
-        MqttAndroidClient mqc = new MqttAndroidClient(this,server,MqttClient.generateClientId());
-        mqc.setCallback(mqttcb);
-        /*
-        // Debugging aid: trace the paho client internals
-        mqc.setTraceCallback(mqttth);
-        mqc.setTraceEnabled(true);
-        */
-
-        // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
-        // subscription requests, which of course have *yet more* callbacks, which
-        // react to messages sent to us.  Have we lost the thread yet?
-        try {
-            MqttConnectOptions mco = new MqttConnectOptions();
-            mco.setCleanSession(true);
-            mco.setAutomaticReconnect(true);
-            mco.setKeepAliveInterval(180); // seconds
-            synchronized (this) {
-                if (BuildConfig.DEBUG && mMqc != null) { throw new AssertionError(); }
-                mMqc = mqc;
-            }
-            mqc.connect(mco, null, mqttal);
-            Log.d("CtFwS", "Connect dispatched");
-        } catch (MqttException e) {
-            Log.e("CtFwS", "Conn Exn", e);
-        }
-    }
-
-    // Must hold strongly since Android only holds weakly once registered.
-    private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
-            = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            switch(key) {
-                case "server":
-                    String s = sharedPreferences.getString(key,null);
-                    if (s != null) { doMqtt(s); }
-                    break;
-            }
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String defserver = "tcp://ctfws-mqtt.ietfng.org:1883";
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTvSU = (TextView) findViewById(R.id.tv_mqtt_server_uri);
-        mTvSS = (TextView) findViewById(R.id.tv_mqtt_state);
-
-        CtFwSDisplayLocal mCdl = new CtFwSDisplayLocal(this, new Handler());
-        mCgs.registerObserver(mCdl);
-
-        mabh.onCreate(mCgs);
-
-        mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
-
-        SharedPreferences sp = getPreferences(MODE_PRIVATE);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if (sp.getString("server", null) == null) {
             sp.edit().putString("server", defserver).apply();
         }
@@ -225,10 +75,43 @@ public class MainActivity extends AppCompatActivity {
             throw new AssertionError("Shared Preferences not sticking!");
         }
 
-        synchronized(this) {
-            sp.registerOnSharedPreferenceChangeListener(mOSPCL);
-            doMqtt(sp.getString("server", defserver));
+        mTvSU = (TextView) findViewById(R.id.tv_mqtt_server_uri);
+        mTvSS = (TextView) findViewById(R.id.tv_mqtt_state);
+
+        mCdl = new CtFwSDisplayLocal(this, new Handler());
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        bindService(new Intent(this, MainService.class), new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                mSrvBinder = (MainService.LocalBinder) service;
+                mSrvBinder.getGameState().registerObserver(mCdl);
+                mSrvBinder.registerObserver(mSrvObs);
+                // Fake an initial server event so we draw some text
+                mSrvObs.onMqttServerEvent(mSrvBinder, mSrvBinder.getServerState());
+                mabh.onStart(MainActivity.this, mSrvBinder);
+                mSrvBinder.connect(false);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                mSrvBinder = null;
+            }
+        }, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        if (mSrvBinder != null) {
+            mSrvBinder.getGameState().unregisterObserver(mCdl);
+            mSrvBinder.unregisterObserver(mSrvObs);
         }
+
+        super.onStop();
     }
 
     // Every good application needs an easter egg
@@ -246,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Kick the mqtt layer on a click on the status stuff
     public void onclick_connmeta(View v) {
-        doMqtt(getPreferences(MODE_PRIVATE).getString("server",null));
+        mSrvBinder.connect(true);
     }
 
     // TODO should we be using onClick instead for routing?
@@ -256,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_mqtt :
                 DialogFragment d =
                         StringSettingDialogFragment.newInstance(
-                                R.layout.server_dialog, R.id.server_text, "server");
+                                R.layout.server_dialog, R.id.server_text, "server", defserver);
                 d.show(getSupportFragmentManager(),"serverdialog");
                 return true;
             case R.id.menu_about :

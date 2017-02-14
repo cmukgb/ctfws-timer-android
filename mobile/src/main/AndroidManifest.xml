@@ -5,11 +5,11 @@
     <!-- Required for Paho MQTT client -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Seems like a reasonable idea? -->
-    <!--     <uses-permission android:name="android.permission.VIBRATE" /> -->
+    <!-- Seems like a reasonable idea -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_shield_1"
@@ -26,7 +26,12 @@
 
         <service android:name="org.eclipse.paho.android.service.MqttService" />
 
-        <activity android:name=".AboutActivity"></activity>
+        <activity android:name=".AboutActivity" />
+
+        <service
+            android:name=".MainService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

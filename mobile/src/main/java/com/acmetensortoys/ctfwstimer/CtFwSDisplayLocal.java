@@ -27,50 +27,24 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     private Runnable mProber;
-
     @Override
     public void onCtFwSConfigure(final CtFwSGameState gs) {
-        final long nowMS = System.currentTimeMillis();
-        long nowET = SystemClock.elapsedRealtime(); // Chronometer timebase
-        final long tbcf = nowMS - nowET; // time base correction factor ("when we booted"-ish)
+    }
 
-        final CtFwSGameState.Now now = gs.getNow(nowMS / 1000);
-        final Runnable prober = new Runnable() {
-            @Override
-            public void run() {
-                onCtFwSConfigure(gs);
-            }
-        };
+    @Override
+    public void onCtFwSNow(final CtFwSGameState gs, final CtFwSGameState.Now now) {
+        // time base correction factor ("when we booted"-ish)
+        final long tbcf = System.currentTimeMillis() - SystemClock.elapsedRealtime();
 
-
-        Log.d("CtFwS", "Display game state; nowMS=" + nowMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
+        Log.d("CtFwS", "Display game state; nowMS=" + now.wallMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
 
         if (now.rationale != null) {
             Log.d("CtFwS", "Rationale: " + now.rationale + " stop=" + now.stop);
-
             // TODO: display rationale somewhere, probably by hiding the game state!
-
             doReset();
-
-            if (mProber != null) {
-                mHandler.removeCallbacks(mProber);
-            }
-            if (!now.stop) {
-                mProber = prober;
-                mHandler.postDelayed(mProber, now.roundStart*1000 - nowMS);
-            }
-
             return;
         }
-
         // Otherwise, it's game on!
-
-        // Schedule a callback around the time of the next round; if we're early,
-        // that's fine, we'll schedule it again.  If we're late, it'll be glitchy,
-        // but that's fine.
-        mHandler.removeCallbacks(mProber);
-        mProber = prober;
-        mHandler.postDelayed(mProber, now.roundEnd * 1000 - nowMS);
 
         {
             final TextView tv_jb = (TextView) (mAct.findViewById(R.id.tv_jailbreak));
@@ -84,7 +58,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     } else {
                         tv_jb.setText(
                                 String.format(mAct.getResources().getString(R.string.ctfws_jailbreak),
-                                now.round));
+                                now.round, gs.getRounds() - 1));
                     }
                 }
             });

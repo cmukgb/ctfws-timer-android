@@ -10,6 +10,17 @@ import java.util.Set;
 
 public class CtFwSGameState {
 
+    public interface TimerProvider {
+        long wallMS();
+        void postDelay(Runnable r, long delayMS);
+        void cancelPost(Runnable r);
+    }
+    private TimerProvider mT;
+
+    public CtFwSGameState (TimerProvider t) {
+        mT = t;
+    }
+
     // Game time
 
     private boolean configured = false;
@@ -39,11 +50,7 @@ public class CtFwSGameState {
                 }
                 break;
         }
-        if (!isMessageTimeWithin(lastMsgTimestamp)) {
-            msgs.clear();
-            notifyMessages();
-        }
-        notifyConfig();
+        notifyConfigEtAl();
     }
     public String toMqttConfigMessage() {
         if (!configured) {
@@ -54,11 +61,11 @@ public class CtFwSGameState {
     }
     public void deconfigure() {
         this.configured = false;
-        notifyConfig();
+        notifyConfigEtAl();
     }
     public void setEndT(long endT) {
         this.endT = endT;
-        notifyConfig();
+        notifyConfigEtAl();
     }
 
     public class Now {
@@ -66,18 +73,23 @@ public class CtFwSGameState {
         public boolean stop = false;
         public int round = 0;  // 0 for setup
         public long roundStart = 0, roundEnd = 0; // NTP seconds
+
+        public long wallMS; // timestamp at object creation: NTP time * 1000 (i.e. msec)
     }
-    public Now getNow(long now) {
+    public Now getNow(long wallMS) {
         Now res = new Now();
+        res.wallMS = wallMS;
+
+        long now = wallMS/1000;
         if (!configured) {
-            res.rationale = "Game not configured";
+            res.rationale = "Game not configured!";
             res.stop = true;
         } else if (endT >= startT) {
             res.rationale = "Game over!";
             res.stop = true;
-        } else if (now <= startT) {
+        } else if (now < startT) {
             res.rationale = "Start time in the future!";
-            res.roundStart = startT;
+            res.roundStart = res.roundEnd = startT;
         }
         if (res.rationale != null) {
             return res;
@@ -173,7 +185,7 @@ public class CtFwSGameState {
         } catch (NoSuchElementException nse) {
             // Maybe they forgot a time stamp.  That's not ideal, but... fake it?
             // XXX Back off a bit, for time sync reasons
-            lastMsgTimestamp = System.currentTimeMillis()/1000 - 30;
+            lastMsgTimestamp = mT.wallMS()/1000 - 30;
             msgs.add(new Msg(lastMsgTimestamp, str));
             notifyMessages();
             return;
@@ -193,9 +205,9 @@ public class CtFwSGameState {
 
     public interface Observer {
         void onCtFwSConfigure(CtFwSGameState game);
+        void onCtFwSNow(CtFwSGameState game, Now now);
         void onCtFwSFlags(CtFwSGameState game);
         void onCtFwSMessage(CtFwSGameState game, List<Msg> msgs);
-
     }
     final private Set<Observer> mObsvs = new HashSet<>();
     private void notifyFlags() {
@@ -208,9 +220,32 @@ public class CtFwSGameState {
             for (Observer o : mObsvs) { o.onCtFwSMessage(this, msgs); }
         }
     }
-    private void notifyConfig() {
+    private void notifyConfigEtAl() {
+        if (!isMessageTimeWithin(lastMsgTimestamp)) {
+            msgs.clear();
+            notifyMessages();
+        }
         synchronized(this) {
             for (Observer o : mObsvs) { o.onCtFwSConfigure(this); }
+        }
+        notifyNow();
+    }
+    private final Runnable futureNotifyNow = new Runnable() {
+        @Override
+        public void run() {
+            notifyNow();
+        }
+    };
+    private void notifyNow() {
+        mT.cancelPost(futureNotifyNow);
+        Now n = getNow(mT.wallMS());
+        synchronized(this) {
+            for (Observer o : mObsvs) {
+                o.onCtFwSNow(this, n);
+            }
+            if (n.rationale == null || !n.stop) {
+                mT.postDelay(futureNotifyNow, n.roundEnd*1000 - n.wallMS);
+            }
         }
     }
     public void registerObserver(Observer d) {
@@ -219,5 +254,4 @@ public class CtFwSGameState {
     public void unregisterObserver(Observer d) {
         synchronized(this) { mObsvs.remove(d); }
     }
-
 }
