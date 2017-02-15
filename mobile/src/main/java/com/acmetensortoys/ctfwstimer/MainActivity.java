@@ -13,6 +13,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -81,37 +82,48 @@ public class MainActivity extends AppCompatActivity {
         mCdl = new CtFwSDisplayLocal(this, new Handler());
     }
 
+    private ServiceConnection ctfwssc = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mSrvBinder = (MainService.LocalBinder) service;
+            mSrvBinder.getGameState().registerObserver(mCdl);
+            mSrvBinder.registerObserver(mSrvObs);
+            mabh.onStart(MainActivity.this, mSrvBinder);
+            mSrvBinder.connect(false);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mSrvBinder = null;
+        }
+    };
+
     @Override
     public void onStart() {
+        Log.d("CtFwS", "onStart");
         super.onStart();
 
-        bindService(new Intent(this, MainService.class), new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                mSrvBinder = (MainService.LocalBinder) service;
-                mSrvBinder.getGameState().registerObserver(mCdl);
-                mSrvBinder.registerObserver(mSrvObs);
-                // Fake an initial server event so we draw some text
-                mSrvObs.onMqttServerEvent(mSrvBinder, mSrvBinder.getServerState());
-                mabh.onStart(MainActivity.this, mSrvBinder);
-                mSrvBinder.connect(false);
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                mSrvBinder = null;
-            }
-        }, Context.BIND_AUTO_CREATE);
+        Intent si = new Intent(this, MainService.class);
+        bindService(si, ctfwssc, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
+        Log.d("CtFwS", "onStop");
         if (mSrvBinder != null) {
             mSrvBinder.getGameState().unregisterObserver(mCdl);
             mSrvBinder.unregisterObserver(mSrvObs);
         }
 
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d("CtFwS", "onDestroy");
+        unbindService(ctfwssc);
+
+        super.onDestroy();
     }
 
     // Every good application needs an easter egg

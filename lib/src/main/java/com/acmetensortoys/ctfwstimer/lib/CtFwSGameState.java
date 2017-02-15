@@ -204,9 +204,20 @@ public class CtFwSGameState {
     // Observer interface
 
     public interface Observer {
+        // Called when the game configuration parameters change
         void onCtFwSConfigure(CtFwSGameState game);
+        // Called when the game parameters change and at round boundaries during the game;
+        // this is an excellent thing to hook for UI update (including updating one's own,
+        // more finely-grained timers).  The Now argument captures the state of the game
+        // immediately prior to the dispatch of callbacks.
         void onCtFwSNow(CtFwSGameState game, Now now);
+        // Called when a flag message arrives.
         void onCtFwSFlags(CtFwSGameState game);
+        // Called when a human-readable message arrives or when a new game starts (to
+        // empty the list), and is given the entire set of messages received this game
+        // (or since the last), even though usually one only cares about the most recent
+        // entry on the list.  We reserve the right to trim this list in the future, but
+        // at the moment we do not.  Callees should not alter the list in any way.
         void onCtFwSMessage(CtFwSGameState game, List<Msg> msgs);
     }
     final private Set<Observer> mObsvs = new HashSet<>();
@@ -249,7 +260,17 @@ public class CtFwSGameState {
         }
     }
     public void registerObserver(Observer d) {
-        synchronized(this) { mObsvs.add(d); }
+        synchronized(this) {
+            if (mObsvs.add(d)) {
+                // Synchronize observer with game state as of right now.
+                d.onCtFwSConfigure(this);
+                d.onCtFwSMessage(this, msgs);
+                if (configured) {
+                    d.onCtFwSFlags(this);
+                    d.onCtFwSNow(this, getNow(mT.wallMS()));
+                }
+            }
+        }
     }
     public void unregisterObserver(Observer d) {
         synchronized(this) { mObsvs.remove(d); }

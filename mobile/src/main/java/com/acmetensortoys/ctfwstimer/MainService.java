@@ -2,7 +2,10 @@ package com.acmetensortoys.ctfwstimer;
 
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
@@ -17,6 +20,7 @@ import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.android.service.MqttTraceHandler;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
@@ -114,7 +118,6 @@ public class MainService extends Service {
         public void connectionLost(Throwable cause) {
             Log.d("CtFwS", "Conn Lost: " + cause, cause);
             setMSE(MqttServerEvent.MSE_DISCONN);
-
         }
 
         @Override
@@ -133,30 +136,53 @@ public class MainService extends Service {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.d("CtFwS", "Conn OK 1");
-            setMSE(MqttServerEvent.MSE_CONN);
+
+            IMqttAsyncClient c = asyncActionToken.getClient();
+            if (c.equals(mMqc)) {
+                setMSE(MqttServerEvent.MSE_CONN);
+            } else {
+                Log.d("Service", "IS STALE CONN");
+                try {
+                    c.disconnect().waitForCompletion();
+                } catch (MqttException me) {
+                    // Drop it, we've already dropped the client handle
+                }
+            }
         }
 
         @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
             Log.e("CtFws", "Conn Fail", exception);
-            setMSE(MqttServerEvent.MSE_DISCONN);
+            if (asyncActionToken.getClient().equals(mMqc)) {
+                setMSE(MqttServerEvent.MSE_DISCONN);
+            } else {
+                Log.d("Service", "IS STALE DISCONN");
+            }
         }
     };
 
     private synchronized void doMqtt(@Nullable String server) {
+        Log.d("Service", "domqtt");
+
         // Hang up on an existing connection, if we have one
-        synchronized (this) {
-            if (mMqc != null) {
-                if (mMqc.isConnected()) {
-                    try {
-                        mMqc.disconnect();
-                        Log.d("CtFwS", "domqtt disconnected");
-                    } catch (MqttException me) {
-                        Log.e("CtFwS", "domqtt disconn exn", me);
-                    }
-                }
+        if (mMqc != null) {
+            mMqc.setCallback(null);
+
+            // TODO: This is *really* annoying; we might leak a connection here because
+            // .disconnect() is so @#*@&#*@^#*&@^ asynchronous it hurts.  There appears
+            // to be no way to force its hand, and adding .waitforcompletion() here just
+            // causes our app to hang.  Bah humbug.  Just leak the connection.  The server
+            // will presumably eventually give up on us or something.  Man, I have no idea,
+            // and the documentation for all of this is amazingly lacking.  Burn it all down.
+            try {
+                mMqc.close();
+            } catch (IllegalArgumentException iae) {
+                Log.d("Service", "domqtt disconn close exn");
+                // *&@#&^*#@#&@#&@#
             }
-            mMqc = null;
+            mMqc.unregisterResources();
+        } else {
+            Log.d("Service", "domqtt no client");
         }
 
         // If we're deliberately disconnecting, tell the service about it.  Otherwise, we'll
@@ -170,6 +196,7 @@ public class MainService extends Service {
 
         // If disconnecting is all we were told to do, we're done.
         if (server == null) {
+            mMqc = null;
             return;
         }
 
@@ -179,13 +206,11 @@ public class MainService extends Service {
         // or we won't resubscribe.  I think this is github issue eclipse/paho.mqtt.android#170
         // but heavens only knows.  Whatever, this works for the moment and doesn't leave
         // stragglers on my server as far as I can tell.
-        MqttAndroidClient mqc = new MqttAndroidClient(this,server, MqttClient.generateClientId());
-        mqc.setCallback(mqttcb);
-        /*
+        mMqc = new MqttAndroidClient(this, server, MqttClient.generateClientId());
+        mMqc.setCallback(mqttcb);
         // Debugging aid: trace the paho client internals
-        mqc.setTraceCallback(mqttth);
-        mqc.setTraceEnabled(true);
-        */
+        mMqc.setTraceCallback(mqttth);
+        // mMqc.setTraceEnabled(true);
 
         // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
         // subscription requests, which of course have *yet more* callbacks, which
@@ -195,18 +220,16 @@ public class MainService extends Service {
             mco.setCleanSession(true);
             mco.setAutomaticReconnect(true);
             mco.setKeepAliveInterval(180); // seconds
-            synchronized (this) {
-                if (BuildConfig.DEBUG && mMqc != null) { throw new AssertionError(); }
-                mMqc = mqc;
-            }
-            mqc.connect(mco, null, mqttal);
-            Log.d("CtFwS", "Connect dispatched");
+            mMqc.connect(mco, null, mqttal);
+            Log.d("Service", "Connect dispatched");
         } catch (MqttException e) {
-            Log.e("CtFwS", "Conn Exn", e);
+            Log.e("Service", "Conn Exn", e);
         }
     }
 
     // Must hold strongly since Android only holds weakly once registered.
+    // TODO: Option for notification persistence during game?
+    // TODO: Option for polling even after game ends?
     private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -241,6 +264,35 @@ public class MainService extends Service {
 
     // User-facing notification
     // TODO Move to its own display module?
+    private ServiceConnection userNoteSC;
+    private void ensureNotification() {
+        synchronized(this) {
+            if (userNoteSC == null) {
+                userNoteSC = new ServiceConnection() {
+                    @Override
+                    public void onServiceConnected(ComponentName name, IBinder service) {
+                    }
+
+                    @Override
+                    public void onServiceDisconnected(ComponentName name) {
+                    }
+                };
+            }
+            bindService(new Intent(MainService.this, MainService.class), userNoteSC,
+                    Context.BIND_AUTO_CREATE);
+            startForeground(NOTE_ID_USER, userNoteBuilder.build());
+        }
+    }
+    private void ensureNoNotification() {
+        synchronized (this) {
+            if (userNoteSC != null) {
+                stopForeground(true);
+                unbindService(userNoteSC);
+                userNoteSC = null;
+            }
+        }
+    }
+
     private NotificationCompat.Builder userNoteBuilder;
     private CtFwSGameState.Observer mCgsObserver = new CtFwSGameState.Observer() {
         @Override
@@ -256,10 +308,10 @@ public class MainService extends Service {
                         now.rationale == null ? "Game is afoot!" : now.rationale);
                 userNoteBuilder.setContentText(
                         now.round == 0 ? "Setup phase" : ("Round " + now.round));
-                startForeground(NOTE_ID_USER, userNoteBuilder.build());
+                ensureNotification();
             } else {
                 // game no longer afoot
-                stopForeground(true);
+                ensureNoNotification();
             }
         }
 
@@ -276,17 +328,10 @@ public class MainService extends Service {
 
         mHandler = new Handler();
 
-
         userNoteBuilder = new NotificationCompat.Builder(MainService.this)
                 .setSmallIcon(R.drawable.shield1)
                 .setContentIntent(PendingIntent.getActivity(MainService.this, 0,
                         new Intent(MainService.this, MainActivity.class), 0));
-
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        synchronized(this) {
-            sp.registerOnSharedPreferenceChangeListener(mOSPCL);
-            doMqtt(sp.getString("server", null));
-        }
     }
 
     public class LocalBinder extends Binder {
@@ -297,18 +342,29 @@ public class MainService extends Service {
             return mMSE;
         }
 
-        // It should not be necessary to call this execpt at the beginning or to force a reconnect;
+        // It should not be necessary to call this except at the beginning or to force a reconnect;
         // most everything else you might want in a connect method is handled by the
         // OnSharedPreferenceChangeListener listener above.
         void connect(boolean force) {
-            if (force || mMSE != MqttServerEvent.MSE_CONN) {
-                doMqtt(PreferenceManager
-                        .getDefaultSharedPreferences(MainService.this)
-                        .getString("server", null));
+            if (force || mMSE != MqttServerEvent.MSE_SUB) {
+                SharedPreferences sp = PreferenceManager
+                        .getDefaultSharedPreferences(MainService.this);
+                sp.registerOnSharedPreferenceChangeListener(mOSPCL);
+                doMqtt(sp.getString("server", null));
             }
         }
         void registerObserver(Observer o) {
-            synchronized(this) { mObsvs.add(o); }
+            synchronized(this) {
+                if (mObsvs.add(o)) {
+                    // Fire off synthetic deltas to bring the observer up to date.
+                    if (mMqc == null) {
+                        o.onMqttServerChanged(mBinder, null);
+                    } else {
+                        o.onMqttServerChanged(mBinder, mMqc.getServerURI());
+                    }
+                    o.onMqttServerEvent(mBinder, mMSE);
+                }
+            }
         }
         void unregisterObserver(Observer o) {
             synchronized(this) { mObsvs.remove(o); }
@@ -318,6 +374,22 @@ public class MainService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d("Service", "onBind: " + intent);
         return mBinder;
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        Log.d("Service", "onRebind" + intent);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d("Service", "onUnbind: " + intent);
+        // All clients have been unbound, go ahead and disconnect and stop ourselves.
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(mOSPCL);
+        doMqtt(null);
+        return true;
     }
 }
