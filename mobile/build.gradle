@@ -19,6 +19,8 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Cam: testing on hardware, whee
+            debuggable true
         }
     }
 
