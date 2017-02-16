@@ -101,17 +101,14 @@ public class MainService extends Service {
         @Override
         public void connectComplete(boolean reconnect, String serverURI) {
             Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
-            try {
-                String p = "ctfws/game/";
-                mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
-                mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
-                mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
-                mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
-                mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
-                setMSE(MqttServerEvent.MSE_SUB);
-            } catch (MqttException e) {
-                Log.e("CtFwS", "Exn Sub", e);
-            }
+            String p = "ctfws/game/";
+            // Cam: According to MQTT docs, subscribe doesn't actually throw an MqttException
+            mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
+            mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
+            mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
+            mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
+            mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
+            setMSE(MqttServerEvent.MSE_SUB);
         }
 
         @Override
@@ -215,16 +212,16 @@ public class MainService extends Service {
         // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
         // subscription requests, which of course have *yet more* callbacks, which
         // react to messages sent to us.  Have we lost the thread yet?
-        try {
+        //try {
             MqttConnectOptions mco = new MqttConnectOptions();
             mco.setCleanSession(true);
             mco.setAutomaticReconnect(true);
             mco.setKeepAliveInterval(180); // seconds
             mMqc.connect(mco, null, mqttal);
             Log.d("Service", "Connect dispatched");
-        } catch (MqttException e) {
-            Log.e("Service", "Conn Exn", e);
-        }
+        //} catch (MqttException e) {
+            //Log.e("Service", "Conn Exn", e);
+        //}
     }
 
     // Must hold strongly since Android only holds weakly once registered.
