@@ -130,13 +130,18 @@ public class MainActivity extends AppCompatActivity {
     private boolean egg = false;
     @SuppressLint({"SetTextI18n"})
     public void onclick_gamestate(View v) {
-        TextView tv = (TextView) v;
-        if (egg) {
-            tv.setText(R.string.header_gamestate);
-        } else {
-            ((TextView) v).setText("DO NOT TAP ON GLASS");
+        final TextView tv = (TextView) v;
+        // Cam: Because every good easter egg needs to be way over-engineered.
+        if (!egg) {
+            egg = true;
+            tv.setText("DO NOT TAP ON GLASS");
+            tv.postDelayed(new Runnable() {
+                public void run() {
+                    tv.setText(R.string.header_gamestate);
+                    egg = false;
+                }
+            }, 3000);
         }
-        egg = !egg;
     }
 
     // Kick the mqtt layer on a click on the status stuff
