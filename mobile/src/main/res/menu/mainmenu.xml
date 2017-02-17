@@ -4,6 +4,13 @@
     <item
         android:visible="true"
         android:enabled="true"
+        android:title="@string/menutext_prf"
+        android:id="@+id/menu_prf"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:checkable="false"/>
+    <item
+        android:visible="true"
+        android:enabled="true"
         android:title="@string/menutext_mqtt"
         android:id="@+id/menu_mqtt"
         android:icon="@android:drawable/ic_menu_manage"
