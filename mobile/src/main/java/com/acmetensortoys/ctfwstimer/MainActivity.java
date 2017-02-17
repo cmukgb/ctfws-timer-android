@@ -150,17 +150,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // TODO should we be using onClick instead for routing?
+    // Cam: According to official documentation, this is the preferred way to into menus, so
+    //      we're (overall) fine.
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {
+            case R.id.menu_prf :
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            case R.id.menu_about :
+                startActivity(new Intent(this, AboutActivity.class));
+                return true;
+            // Cam: Changing this doesn't appear to do anything? Leaving just in case.
             case R.id.menu_mqtt :
                 DialogFragment d =
                         StringSettingDialogFragment.newInstance(
                                 R.layout.server_dialog, R.id.server_text, "server", defserver);
                 d.show(getSupportFragmentManager(),"serverdialog");
-                return true;
-            case R.id.menu_about :
-                startActivity(new Intent(this, AboutActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(mi);
