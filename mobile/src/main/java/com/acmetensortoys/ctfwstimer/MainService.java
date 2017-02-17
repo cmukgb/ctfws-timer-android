@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -101,17 +102,14 @@ public class MainService extends Service {
         @Override
         public void connectComplete(boolean reconnect, String serverURI) {
             Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
-            try {
-                String p = "ctfws/game/";
-                mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
-                mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
-                mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
-                mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
-                mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
-                setMSE(MqttServerEvent.MSE_SUB);
-            } catch (MqttException e) {
-                Log.e("CtFwS", "Exn Sub", e);
-            }
+            String p = "ctfws/game/";
+            // Cam: According to MQTT docs, subscribe doesn't actually throw an MqttException
+            mMqc.subscribe(p+"config"        , 2, null, subal, mCtfwscbs.onConfig);
+            mMqc.subscribe(p+"endtime"       , 2, null, subal, mCtfwscbs.onEnd);
+            mMqc.subscribe(p+"flags"         , 2, null, subal, mCtfwscbs.onFlags);
+            mMqc.subscribe(p+"message"       , 2, null, subal, mCtfwscbs.onMessage);
+            mMqc.subscribe(p+"message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
+            setMSE(MqttServerEvent.MSE_SUB);
         }
 
         @Override
@@ -136,7 +134,6 @@ public class MainService extends Service {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.d("CtFwS", "Conn OK 1");
-
             IMqttAsyncClient c = asyncActionToken.getClient();
             if (c.equals(mMqc)) {
                 setMSE(MqttServerEvent.MSE_CONN);
@@ -215,16 +212,16 @@ public class MainService extends Service {
         // Ahem.  Now then.  Connect with *more callbacks*, which will fire off our
         // subscription requests, which of course have *yet more* callbacks, which
         // react to messages sent to us.  Have we lost the thread yet?
-        try {
+        //try {
             MqttConnectOptions mco = new MqttConnectOptions();
             mco.setCleanSession(true);
             mco.setAutomaticReconnect(true);
             mco.setKeepAliveInterval(180); // seconds
             mMqc.connect(mco, null, mqttal);
             Log.d("Service", "Connect dispatched");
-        } catch (MqttException e) {
-            Log.e("Service", "Conn Exn", e);
-        }
+        //} catch (MqttException e) {
+            //Log.e("Service", "Conn Exn", e);
+        //}
     }
 
     // Must hold strongly since Android only holds weakly once registered.
@@ -264,6 +261,24 @@ public class MainService extends Service {
 
     // User-facing notification
     // TODO Move to its own display module?
+
+    // The pattern for notification vibration patterns. Maybe we could have multiple for different
+    // events, like flags/jailbreaks?
+    private long[] VIBRATE_PATTERN = {0, 300, 200, 300};
+
+    private void vibrate(long[] pattern) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        // Cam: default value is "false" because we really don't want to be vibrating if we
+        //      accidentally lose our preferences somehow
+        if (sp.getBoolean("prf_vibr", false)) {
+            Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            v.vibrate(VIBRATE_PATTERN,-1);
+        }
+        else {
+            Log.d("vibrate", "off");
+        }
+    }
+
     private ServiceConnection userNoteSC;
     private void ensureNotification() {
         synchronized(this) {
@@ -278,6 +293,7 @@ public class MainService extends Service {
                     }
                 };
             }
+            // Cam: Do we need this?
             bindService(new Intent(MainService.this, MainService.class), userNoteSC,
                     Context.BIND_AUTO_CREATE);
             startForeground(NOTE_ID_USER, userNoteBuilder.build());
@@ -294,6 +310,8 @@ public class MainService extends Service {
     }
 
     private NotificationCompat.Builder userNoteBuilder;
+    // TODO (Cam): It'd be cool if we could make the notification say "you got a flag" or something
+    //             for a few seconds after we get messages
     private CtFwSGameState.Observer mCgsObserver = new CtFwSGameState.Observer() {
         @Override
         public void onCtFwSConfigure(CtFwSGameState game) { }
@@ -303,6 +321,7 @@ public class MainService extends Service {
             userNoteBuilder.setWhen((now.roundEnd+1)*1000);
             userNoteBuilder.setUsesChronometer(true);
             if (now.rationale == null || !now.stop) {
+                vibrate(VIBRATE_PATTERN);
                 // game is afoot!
                 userNoteBuilder.setContentTitle(
                         now.rationale == null ? "Game is afoot!" : now.rationale);
@@ -318,6 +337,7 @@ public class MainService extends Service {
         @Override
         public void onCtFwSFlags(CtFwSGameState game) { }
 
+        // Cam: Are we just explicitly no-op'ing this, or should we actually display messages?
         @Override
         public void onCtFwSMessage(CtFwSGameState game, List<CtFwSGameState.Msg> msgs) { }
     };
