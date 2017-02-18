@@ -19,16 +19,35 @@ import static android.view.View.INVISIBLE;
 // TODO nwf is bad at UI design; someone who isn't him should improve this
 class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     final private Activity mAct;
-    final private Handler mHandler;
+    public String gameStateLabelText;
 
-    CtFwSDisplayLocal(Activity a, Handler h) {
+    CtFwSDisplayLocal(Activity a) {
         mAct = a;
-        mHandler = h;
+        gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
     }
 
     private Runnable mProber;
+
     @Override
     public void onCtFwSConfigure(final CtFwSGameState gs) {
+        int gameix = gs.getGameIx();
+        gameStateLabelText =
+                (gs.isConfigured() && gameix != 0)
+                        ?
+                        String.format(
+                                mAct.getResources()
+                                        .getString(R.string.header_gamestateN),
+                                gameix)
+                        : mAct.getResources().getString(R.string.header_gamestate0);
+
+
+        final TextView gstv = (TextView) mAct.findViewById(R.id.header_gamestate);
+        gstv.post(new Runnable() {
+            @Override
+            public void run() {
+                gstv.setText(gameStateLabelText);
+            }
+        });
     }
 
     @Override
@@ -58,7 +77,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     } else {
                         tv_jb.setText(
                                 String.format(mAct.getResources().getString(R.string.ctfws_jailbreak),
-                                now.round, gs.getRounds() - 1));
+                                        now.round, gs.getRounds() - 1));
                     }
                 }
             });
@@ -68,7 +87,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 @Override
                 public void run() {
                     pb_jb.setIndeterminate(false);
-                    pb_jb.setMax((int)(now.roundEnd - now.roundStart));
+                    pb_jb.setMax((int) (now.roundEnd - now.roundStart));
                     pb_jb.setProgress(0);
                 }
             });
@@ -81,14 +100,14 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                         @Override
                         public void onChronometerTick(Chronometer c) {
-                            pb_jb.setProgress((int)(now.roundEnd - System.currentTimeMillis()/1000));
+                            pb_jb.setProgress((int) (now.roundEnd - System.currentTimeMillis() / 1000));
                         }
                     });
                     ch_jb.start();
                 }
             });
         }
-        if (now.round > 0){
+        if (now.round > 0) {
             final ProgressBar pb_gp = (ProgressBar) (mAct.findViewById(R.id.pb_gameProgress));
             pb_gp.post(new Runnable() {
                 @Override
@@ -107,7 +126,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     ch_gp.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                         @Override
                         public void onChronometerTick(Chronometer c) {
-                            pb_gp.setProgress((int)(System.currentTimeMillis()/1000
+                            pb_gp.setProgress((int) (System.currentTimeMillis() / 1000
                                     - gs.getFirstRoundStartT()));
                         }
                     });
@@ -166,7 +185,8 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 public void run() {
                     ch.stop();
                     ch.setVisibility(View.INVISIBLE);
-                }});
+                }
+            });
         }
         {
             final ProgressBar pb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
@@ -204,7 +224,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             }
         }
 
-        final TextView msgs = (TextView)(mAct.findViewById(R.id.tv_flags));
+        final TextView msgs = (TextView) (mAct.findViewById(R.id.tv_flags));
         msgs.post(new Runnable() {
             @Override
             public void run() {
@@ -215,7 +235,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
 
     @Override
     public void onCtFwSMessage(CtFwSGameState gs, List<CtFwSGameState.Msg> msgs) {
-        final TextView msgstv = (TextView)(mAct.findViewById(R.id.msgs));
+        final TextView msgstv = (TextView) (mAct.findViewById(R.id.msgs));
         int s = msgs.size();
 
         if (s == 0) {

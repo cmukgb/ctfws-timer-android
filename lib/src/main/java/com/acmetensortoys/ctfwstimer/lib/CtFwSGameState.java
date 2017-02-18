@@ -28,6 +28,7 @@ public class CtFwSGameState {
     private int  setupD;
     private int  rounds;
     private int  roundD;
+    private int  gameIx;
     private long endT = 0;   // NTP seconds for game end (if >= startT)
 
     public void fromMqttConfigMessage(String st) {
@@ -39,11 +40,12 @@ public class CtFwSGameState {
             default:
                 try {
                     Scanner s = new Scanner(tm);
-                    this.startT    =  s.nextLong();
+                    this.startT     = s.nextLong();
                     this.setupD     = s.nextInt();
                     this.rounds     = s.nextInt();
                     this.roundD     = s.nextInt();
                     this.flagsTotal = s.nextInt();
+                    this.gameIx     = s.nextInt();
                     this.configured = true;
                 } catch (NoSuchElementException e) {
                     this.configured = false;
@@ -116,6 +118,7 @@ public class CtFwSGameState {
     public boolean isConfigured(){
         return configured;
     }
+    public int getGameIx() { return gameIx; }
     public long getStartT() { return startT; }
     public long getFirstRoundStartT() { return startT + setupD; }
     public int getRounds() { return rounds; }

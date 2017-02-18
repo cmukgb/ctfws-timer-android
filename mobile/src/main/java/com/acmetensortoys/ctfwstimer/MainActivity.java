@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         mTvSU = (TextView) findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = (TextView) findViewById(R.id.tv_mqtt_state);
 
-        mCdl = new CtFwSDisplayLocal(this, new Handler());
+        mCdl = new CtFwSDisplayLocal(this);
     }
 
     private ServiceConnection ctfwssc = new ServiceConnection() {
@@ -137,7 +137,11 @@ public class MainActivity extends AppCompatActivity {
             tv.setText("DO NOT TAP ON GLASS");
             tv.postDelayed(new Runnable() {
                 public void run() {
-                    tv.setText(R.string.header_gamestate);
+                    if (mCdl != null) {
+                        tv.setText(mCdl.gameStateLabelText);
+                    } else {
+                        tv.setText(R.string.header_gamestate0);
+                    }
                     egg = false;
                 }
             }, 3000);

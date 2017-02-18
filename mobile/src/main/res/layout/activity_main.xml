@@ -60,12 +60,13 @@
         -->
 
         <TextView
-            android:text="@string/header_gamestate"
+            android:text="@string/header_gamestate0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:clickable="true"
-            android:onClick="onclick_gamestate" />
+            android:onClick="onclick_gamestate"
+            android:id="@+id/header_gamestate" />
 
         <TableLayout
             android:layout_width="match_parent"

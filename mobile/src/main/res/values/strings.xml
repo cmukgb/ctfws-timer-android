@@ -6,7 +6,8 @@
     <string name="ctfws_jailbreak">Jailbreak\n%1$d of %2$d</string>
     <string name="ctfws_flags">%1$d Flags:</string>
 
-    <string name="header_gamestate">Game State:</string>
+    <string name="header_gamestate0">Game State:</string>
+    <string name="header_gamestateN">Game %1$d State:</string>
     <string name="header_gametimeela">Game\nTime\nElapsed</string>
     <string name="header_messages">Messages:</string>
 
