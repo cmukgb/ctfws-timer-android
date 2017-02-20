@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditTextPreference
+    <com.acmetensortoys.ctfwstimer.DefaultableEditTextPreference
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:key="prf_mqtt_uri"
+        android:key="server"
         android:defaultValue="tcp://ctfws-mqtt.ietfng.org:1883"
-        android:title="Change MQTT Server" />
+        android:title="@string/menutext_mqtt" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:title="Vibrate?"

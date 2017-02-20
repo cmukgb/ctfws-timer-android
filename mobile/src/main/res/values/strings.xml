@@ -17,10 +17,10 @@
 
     <string name="menutext_about">About</string>
     <string name="menutext_mqtt">Set MQTT Server</string>
-    <string name="menutext_mqtt_label">Server URI:</string>
     <string name="menutext_prf">Settings</string>
 
     <string name="mqtt_header">Connection Metadata:</string>
+    <string name="mqtt_uri_label">Server URI:</string>
     <string name="mqtt_state_label">Server State:</string>
     <string name="mqtt_conn">Connected but not subscribed</string>
     <string name="mqtt_disconn">Disconnected</string>

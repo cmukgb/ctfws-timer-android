@@ -103,8 +103,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d("CtFwS", "onStart");
         super.onStart();
 
-        Intent si = new Intent(this, MainService.class);
-        bindService(si, ctfwssc, Context.BIND_AUTO_CREATE);
+        if (mSrvBinder == null) {
+            Intent si = new Intent(this, MainService.class);
+            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE);
+        } else {
+            mSrvBinder.getGameState().registerObserver(mCdl);
+            mSrvBinder.registerObserver(mSrvObs);
+        }
     }
 
     @Override
@@ -166,12 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AboutActivity.class));
                 return true;
             // Cam: Changing this doesn't appear to do anything? Leaving just in case.
-            case R.id.menu_mqtt :
-                DialogFragment d =
-                        StringSettingDialogFragment.newInstance(
-                                R.layout.server_dialog, R.id.server_text, "server", defserver);
-                d.show(getSupportFragmentManager(),"serverdialog");
-                return true;
             default:
                 return super.onOptionsItemSelected(mi);
         }
