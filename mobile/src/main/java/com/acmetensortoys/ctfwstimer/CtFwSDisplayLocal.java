@@ -246,7 +246,6 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 }
             });
         } else {
-
             CtFwSGameState.Msg m = msgs.get(s - 1);
 
             long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;

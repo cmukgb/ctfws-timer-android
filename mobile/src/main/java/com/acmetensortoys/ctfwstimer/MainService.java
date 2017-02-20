@@ -1,19 +1,13 @@
 package com.acmetensortoys.ctfwstimer;
 
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
@@ -36,8 +30,8 @@ import java.util.Set;
 
 public class MainService extends Service {
     // Android stuff
-    private static final int NOTE_ID_USER = 1;
-    private Handler mHandler; // set in OnCreate
+    static final int NOTE_ID_USER = 1;
+    private Handler mHandler; // set in onCreate
 
     // The reason we're here!
     private final CtFwSGameState mCgs
@@ -59,9 +53,9 @@ public class MainService extends Service {
     });
     private CtFwSCallbacksMQTT mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
 
-    public MainService() {
-        mCgs.registerObserver(mCgsObserver);
-    }
+    private MainServiceNotification mMsn; // set in onCreate
+
+    public MainService() { }
 
     // MQTT client management
 
@@ -262,99 +256,12 @@ public class MainService extends Service {
         }
     }
 
-    // User-facing notification
-    // TODO Move to its own display module?
-
-    // The pattern for notification vibration patterns. Maybe we could have multiple for different
-    // events, like flags/jailbreaks?
-    private long[] VIBRATE_PATTERN = {0, 300, 200, 300};
-
-    private void vibrate(long[] pattern) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        // Cam: default value is "false" because we really don't want to be vibrating if we
-        //      accidentally lose our preferences somehow
-        if (sp.getBoolean("prf_vibr", false)) {
-            Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            v.vibrate(VIBRATE_PATTERN,-1);
-        }
-        else {
-            Log.d("vibrate", "off");
-        }
-    }
-
-    private ServiceConnection userNoteSC;
-    private void ensureNotification() {
-        synchronized(this) {
-            if (userNoteSC == null) {
-                userNoteSC = new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName name, IBinder service) {
-                    }
-
-                    @Override
-                    public void onServiceDisconnected(ComponentName name) {
-                    }
-                };
-            }
-            // Cam: Do we need this?
-            bindService(new Intent(MainService.this, MainService.class), userNoteSC,
-                    Context.BIND_AUTO_CREATE);
-            startForeground(NOTE_ID_USER, userNoteBuilder.build());
-        }
-    }
-    private void ensureNoNotification() {
-        synchronized (this) {
-            if (userNoteSC != null) {
-                stopForeground(true);
-                unbindService(userNoteSC);
-                userNoteSC = null;
-            }
-        }
-    }
-
-    private NotificationCompat.Builder userNoteBuilder;
-    // TODO (Cam): It'd be cool if we could make the notification say "you got a flag" or something
-    //             for a few seconds after we get messages
-    private CtFwSGameState.Observer mCgsObserver = new CtFwSGameState.Observer() {
-        @Override
-        public void onCtFwSConfigure(CtFwSGameState game) { }
-
-        @Override
-        public void onCtFwSNow(CtFwSGameState game, CtFwSGameState.Now now) {
-            userNoteBuilder.setWhen((now.roundEnd+1)*1000);
-            userNoteBuilder.setUsesChronometer(true);
-            if (now.rationale == null || !now.stop) {
-                vibrate(VIBRATE_PATTERN);
-                // game is afoot!
-                userNoteBuilder.setContentTitle(
-                        now.rationale == null ? "Game is afoot!" : now.rationale);
-                userNoteBuilder.setContentText(
-                        now.round == 0 ? "Setup phase" : ("Round " + now.round));
-                ensureNotification();
-            } else {
-                // game no longer afoot
-                ensureNoNotification();
-            }
-        }
-
-        @Override
-        public void onCtFwSFlags(CtFwSGameState game) { }
-
-        // Cam: Are we just explicitly no-op'ing this, or should we actually display messages?
-        @Override
-        public void onCtFwSMessage(CtFwSGameState game, List<CtFwSGameState.Msg> msgs) { }
-    };
-
     @Override
     public void onCreate() {
         super.onCreate();
 
         mHandler = new Handler();
-
-        userNoteBuilder = new NotificationCompat.Builder(MainService.this)
-                .setSmallIcon(R.drawable.shield1)
-                .setContentIntent(PendingIntent.getActivity(MainService.this, 0,
-                        new Intent(MainService.this, MainActivity.class), 0));
+        mMsn = new MainServiceNotification(this, mCgs);
     }
 
     public class LocalBinder extends Binder {

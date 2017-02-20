@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (mSrvBinder == null) {
             Intent si = new Intent(this, MainService.class);
-            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE);
+            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE | Context.BIND_ABOVE_CLIENT);
         } else {
             mSrvBinder.getGameState().registerObserver(mCdl);
             mSrvBinder.registerObserver(mSrvObs);

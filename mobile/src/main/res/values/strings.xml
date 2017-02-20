@@ -6,17 +6,20 @@
     <string name="ctfws_jailbreak">Jailbreak\n%1$d of %2$d</string>
     <string name="ctfws_flags">%1$d Flags:</string>
 
+    <string name="dialog_reset">Default</string>
+
     <string name="header_gamestate0">Game State:</string>
     <string name="header_gamestateN">Game %1$d State:</string>
     <string name="header_gametimeela">Game\nTime\nElapsed</string>
     <string name="header_messages">Messages:</string>
 
-    <string name="dialog_ok">OK</string>
-    <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_reset">Default</string>
+    <string name="notify_afoot">The game\'s afoot!</string>
+    <string name="notify_flags">Flag captured! Red:%1$d Yellow:%2$d</string>
+    <string name="notify_gameend">Game ending soon</string>
+    <string name="notify_gamestart">Setup phase</string>
+    <string name="notify_jailbreak">Jailbreak %1$d of %2$d</string>
 
     <string name="menutext_about">About</string>
-    <string name="menutext_mqtt">Set MQTT Server</string>
     <string name="menutext_prf">Settings</string>
 
     <string name="mqtt_header">Connection Metadata:</string>
@@ -25,6 +28,9 @@
     <string name="mqtt_conn">Connected but not subscribed</string>
     <string name="mqtt_disconn">Disconnected</string>
     <string name="mqtt_subbed">Subscribed</string>
+
+    <string name="preftext_mqtt">Set MQTT Server</string>
+    <string name="preftext_vibrate">Vibrate?</string>
 
     <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 

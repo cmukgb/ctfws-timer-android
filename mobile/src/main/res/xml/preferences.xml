@@ -6,9 +6,9 @@
         android:singleLine="true"
         android:key="server"
         android:defaultValue="tcp://ctfws-mqtt.ietfng.org:1883"
-        android:title="@string/menutext_mqtt" />
+        android:title="@string/preftext_mqtt" />
     <CheckBoxPreference
         android:defaultValue="true"
-        android:title="Vibrate?"
+        android:title="@string/preftext_vibrate"
         android:key="prf_vibr" />
 </PreferenceScreen>
