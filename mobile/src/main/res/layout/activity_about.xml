@@ -11,17 +11,62 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.acmetensortoys.ctfwstimer.AboutActivity">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/shield1"
-        android:id="@+id/about_image"
-        android:layout_above="@+id/about_text" />
-
-    <WebView
+    <TabHost
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/about_text"
-        android:layout_alignParentBottom="true" />
+        android:layout_height="match_parent"
+        android:id="@+id/about_tab_host">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+            </TabWidget>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/about_tab_program">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/shield1"
+                        android:id="@+id/about_image"
+                        android:layout_above="@+id/about_text" />
+
+                    <WebView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/about_text"
+                        android:layout_alignParentBottom="true" />
+                </RelativeLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/about_tab_lic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <WebView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/about_licenses" />
+                </LinearLayout>
+
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
 
 </RelativeLayout>
