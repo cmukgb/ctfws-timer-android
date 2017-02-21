@@ -15,7 +15,7 @@ public class CtFwSGameState {
         void postDelay(Runnable r, long delayMS);
         void cancelPost(Runnable r);
     }
-    private TimerProvider mT;
+    private final TimerProvider mT;
 
     public CtFwSGameState (TimerProvider t) {
         mT = t;
@@ -168,15 +168,15 @@ public class CtFwSGameState {
     // Informative messages handling
 
     public class Msg {
-        public long when;
-        public String msg;
+        public final long when;
+        public final String msg;
 
         Msg(long when, String msg) {
             this.when = when;
             this.msg  = msg;
         }
     }
-    private List<Msg> msgs = new ArrayList<>();
+    private final List<Msg> msgs = new ArrayList<>();
     private long lastMsgTimestamp;
 
     public void onNewMessage(String str) {

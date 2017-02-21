@@ -1,7 +1,6 @@
 package com.acmetensortoys.ctfwstimer;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -19,14 +18,12 @@ import static android.view.View.INVISIBLE;
 // TODO nwf is bad at UI design; someone who isn't him should improve this
 class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     final private Activity mAct;
-    public String gameStateLabelText;
+    String gameStateLabelText;
 
     CtFwSDisplayLocal(Activity a) {
         mAct = a;
         gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
     }
-
-    private Runnable mProber;
 
     @Override
     public void onCtFwSConfigure(final CtFwSGameState gs) {
@@ -65,6 +62,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
         }
         // Otherwise, it's game on!
 
+        // Upper line text
         {
             final TextView tv_jb = (TextView) (mAct.findViewById(R.id.tv_jailbreak));
             tv_jb.post(new Runnable() {
@@ -81,7 +79,13 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     }
                 }
             });
+        }
 
+        // Upper progress bar and chronometer
+        // TODO: Older devices cannot count down in Chronometer, so will see only zeros, I
+        // think.  This should be fixed by making those devices count up (and still rendering
+        // the progress bar rotated for decreasing, one assumes).
+        {
             final ProgressBar pb_jb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
             pb_jb.post(new Runnable() {
                 @Override
@@ -107,6 +111,8 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 }
             });
         }
+
+        // Lower progress bar and chronometer
         if (now.round > 0) {
             final ProgressBar pb_gp = (ProgressBar) (mAct.findViewById(R.id.pb_gameProgress));
             pb_gp.post(new Runnable() {
@@ -147,6 +153,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             ch_gp.post(new Runnable() {
                 @Override
                 public void run() {
+                    ch_gp.setOnChronometerTickListener(null);
                     ch_gp.stop();
                     ch_gp.setVisibility(INVISIBLE);
                 }
@@ -157,8 +164,8 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             tv_flags.post(new Runnable() {
                 @Override
                 public void run() {
-                    tv_flags.setText(
-                            String.format(mAct.getResources().getString(R.string.ctfws_flags), gs.flagsTotal));
+                    tv_flags.setText(mAct.getResources()
+                            .getQuantityString(R.plurals.ctfws_flags,gs.flagsTotal,gs.flagsTotal));
                 }
             });
         }
@@ -183,6 +190,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             ch.post(new Runnable() {
                 @Override
                 public void run() {
+                    ch.setOnChronometerTickListener(null);
                     ch.stop();
                     ch.setVisibility(View.INVISIBLE);
                 }

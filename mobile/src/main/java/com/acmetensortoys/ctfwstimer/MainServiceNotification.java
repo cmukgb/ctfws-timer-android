@@ -17,7 +17,7 @@ import java.util.List;
 
 class MainServiceNotification {
     final private MainService mService;
-    private NotificationCompat.Builder userNoteBuilder;
+    private final NotificationCompat.Builder userNoteBuilder;
 
     MainServiceNotification(MainService ms, CtFwSGameState game){
         mService = ms;
@@ -93,9 +93,9 @@ class MainServiceNotification {
         });
     }
 
-    private long[] VIBRATE_PATTERN_NOW  = {0, 100, 100, 300, 100, 300, 100, 300}; // 'J' = .---
-    private long[] VIBRATE_PATTERN_FLAG = {0, 100, 100, 100, 100, 300, 100, 100}; // 'F' = ..-.
-    private long[] VIBRATE_PATTERN_MSG  = {0, 300, 100, 300};                     // 'M' = --
+    private final long[] VIBRATE_PATTERN_NOW  = {0, 100, 100, 300, 100, 300, 100, 300}; // 'J' = .---
+    private final long[] VIBRATE_PATTERN_FLAG = {0, 100, 100, 100, 100, 300, 100, 100}; // 'F' = ..-.
+    private final long[] VIBRATE_PATTERN_MSG  = {0, 300, 100, 300};                     // 'M' = --
 
     private void vibrate(long[] pattern) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mService.getBaseContext());

@@ -25,7 +25,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class MainService extends Service {
@@ -51,8 +50,9 @@ public class MainService extends Service {
             mHandler.removeCallbacks(r);
         }
     });
-    private CtFwSCallbacksMQTT mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
+    private final CtFwSCallbacksMQTT mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
 
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private MainServiceNotification mMsn; // set in onCreate
 
     public MainService() { }
@@ -268,9 +268,6 @@ public class MainService extends Service {
         CtFwSGameState getGameState() {
             return mCgs;
         }
-        MqttServerEvent getServerState() {
-            return mMSE;
-        }
 
         // It should not be necessary to call this except at the beginning or to force a reconnect;
         // most everything else you might want in a connect method is handled by the
@@ -300,7 +297,7 @@ public class MainService extends Service {
             synchronized(this) { mObsvs.remove(o); }
         }
     }
-    private LocalBinder mBinder = new LocalBinder();
+    private final LocalBinder mBinder = new LocalBinder();
 
     @Override
     public IBinder onBind(Intent intent) {

@@ -14,7 +14,7 @@ class CtFwSCallbacksMQTT {
         mCgs = cgs;
     }
 
-    IMqttMessageListener onConfig = new IMqttMessageListener() {
+    final IMqttMessageListener onConfig = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             String tm = message.toString().trim();
@@ -23,7 +23,7 @@ class CtFwSCallbacksMQTT {
         }
     };
 
-    IMqttMessageListener onEnd = new IMqttMessageListener() {
+    final IMqttMessageListener onEnd = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             Log.d("CtFwS", "Message(End): " + message);
@@ -37,7 +37,7 @@ class CtFwSCallbacksMQTT {
         }
     };
 
-    IMqttMessageListener onFlags = new IMqttMessageListener() {
+    final IMqttMessageListener onFlags = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             String tm = message.toString().trim();
@@ -46,7 +46,7 @@ class CtFwSCallbacksMQTT {
         }
     };
 
-    IMqttMessageListener onMessage = new IMqttMessageListener() {
+    final IMqttMessageListener onMessage = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             String str = message.toString();
@@ -55,7 +55,7 @@ class CtFwSCallbacksMQTT {
         }
     };
 
-    IMqttMessageListener onPlayerMessage = new IMqttMessageListener() {
+    final IMqttMessageListener onPlayerMessage = new IMqttMessageListener() {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             String str = message.toString();

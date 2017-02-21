@@ -25,10 +25,10 @@ public class MainActivity extends AppCompatActivity {
     // TODO surely this belongs somewhere else
     private static final String defserver = "tcp://ctfws-mqtt.ietfng.org:1883";
 
-    private MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
+    private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
     private MainService.LocalBinder mSrvBinder; // set once connection completed
-    private MainService.Observer mSrvObs = new MainService.Observer() {
+    private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
         public void onMqttServerChanged(MainService.LocalBinder b, final String sURL) {
             mTvSU.post(new Runnable() {
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         mCdl = new CtFwSDisplayLocal(this);
     }
 
-    private ServiceConnection ctfwssc = new ServiceConnection() {
+    private final ServiceConnection ctfwssc = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mSrvBinder = (MainService.LocalBinder) service;
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Kick the mqtt layer on a click on the status stuff
-    public void onclick_connmeta(View v) {
+    public void onclick_connmeta(@SuppressWarnings("UnusedParameters") View v) {
         mSrvBinder.connect(true);
     }
 

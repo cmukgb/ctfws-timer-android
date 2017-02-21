@@ -43,7 +43,8 @@
                         android:layout_height="wrap_content"
                         app:srcCompat="@drawable/shield1"
                         android:id="@+id/about_image"
-                        android:layout_above="@+id/about_text" />
+                        android:layout_above="@+id/about_text"
+                        android:contentDescription="@string/about_imagealt"/>
 
                     <WebView
                         android:layout_width="match_parent"
