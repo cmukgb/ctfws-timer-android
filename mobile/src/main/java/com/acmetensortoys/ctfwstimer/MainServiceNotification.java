@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -38,7 +39,11 @@ class MainServiceNotification {
 
             @Override
             public void onCtFwSNow(CtFwSGameState game, CtFwSGameState.Now now) {
-                userNoteBuilder.setWhen((now.roundEnd + 1) * 1000);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    userNoteBuilder.setWhen((now.roundEnd + 1) * 1000);
+                } else {
+                    userNoteBuilder.setWhen(now.roundStart * 1000);
+                }
                 userNoteBuilder.setUsesChronometer(true);
                 if (now.rationale == null || !now.stop) {
                     // game is afoot or in the future!

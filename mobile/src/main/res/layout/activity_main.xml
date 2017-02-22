@@ -101,8 +101,7 @@
                 <Chronometer
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ch_jailbreak"
-                    android:countDown="true" />
+                    android:id="@+id/ch_jailbreak" />
 
             </TableRow>
 

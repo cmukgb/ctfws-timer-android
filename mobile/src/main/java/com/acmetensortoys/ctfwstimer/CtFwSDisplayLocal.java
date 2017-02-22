@@ -1,6 +1,8 @@
 package com.acmetensortoys.ctfwstimer;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -82,9 +84,6 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
         }
 
         // Upper progress bar and chronometer
-        // TODO: Older devices cannot count down in Chronometer, so will see only zeros, I
-        // think.  This should be fixed by making those devices count up (and still rendering
-        // the progress bar rotated for decreasing, one assumes).
         {
             final ProgressBar pb_jb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
             pb_jb.post(new Runnable() {
@@ -100,7 +99,14 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             ch_jb.post(new Runnable() {
                 @Override
                 public void run() {
-                    ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
+                        ch_jb.setCountDown(true);
+                    } else {
+                        ch_jb.setBase(now.roundStart * 1000 - tbcf);
+                        ch_jb.setBackgroundColor(Color.BLACK);
+                        ch_jb.setTextColor(Color.WHITE);
+                    }
                     ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                         @Override
                         public void onChronometerTick(Chronometer c) {
