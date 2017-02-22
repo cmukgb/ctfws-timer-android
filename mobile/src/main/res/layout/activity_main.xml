@@ -13,52 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!--
-        <TableLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/tbl_opts"
-            android:stretchColumns="1">
-
-            <TableRow
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" >
-
-                <TextView
-                    android:text="Notifications\nDuring\nGame"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center" />
-
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <CheckBox
-                        android:text="Wear"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/notif_wear"
-                        android:layout_weight="1" />
-
-                    <CheckBox
-                        android:text="Here"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/notif_here"
-                        android:layout_weight="1" />
-                </LinearLayout>
-
-            </TableRow>
-
-            <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </TableLayout>
-        -->
-
         <TextView
             android:text="@string/header_gamestate0"
             android:layout_width="match_parent"
