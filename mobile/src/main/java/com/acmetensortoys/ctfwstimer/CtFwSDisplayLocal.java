@@ -27,18 +27,23 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
         gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
     }
 
-    @Override
-    public void onCtFwSConfigure(final CtFwSGameState gs) {
-        int gameix = gs.getGameIx();
-        gameStateLabelText =
-                (gs.isConfigured() && gameix != 0)
+    private void doSetGameStateLabelText(final CtFwSGameState gs, String rationale) {
+        int gameIndex = gs.getGameIx();
+
+        String pfx =
+                (gs.isConfigured() && gameIndex != 0)
                         ?
                         String.format(
                                 mAct.getResources()
                                         .getString(R.string.header_gamestateN),
-                                gameix)
+                                gameIndex)
                         : mAct.getResources().getString(R.string.header_gamestate0);
 
+        if (rationale != null) {
+            gameStateLabelText = pfx + " " + rationale;
+        } else {
+            gameStateLabelText = pfx;
+        }
 
         final TextView gstv = (TextView) mAct.findViewById(R.id.header_gamestate);
         gstv.post(new Runnable() {
@@ -50,15 +55,21 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     @Override
+    public void onCtFwSConfigure(final CtFwSGameState gs) {
+        doSetGameStateLabelText(gs, null);
+    }
+
+    @Override
     public void onCtFwSNow(final CtFwSGameState gs, final CtFwSGameState.Now now) {
         // time base correction factor ("when we booted"-ish)
         final long tbcf = System.currentTimeMillis() - SystemClock.elapsedRealtime();
 
         Log.d("CtFwS", "Display game state; nowMS=" + now.wallMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
 
+        doSetGameStateLabelText(gs, now.rationale);
+
         if (now.rationale != null) {
             Log.d("CtFwS", "Rationale: " + now.rationale + " stop=" + now.stop);
-            // TODO: display rationale somewhere, probably by hiding the game state!
             doReset();
             return;
         }
