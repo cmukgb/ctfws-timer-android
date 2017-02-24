@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+// TODO There should be an I've-been-stunned timer, too.
+
 public class MainActivity extends AppCompatActivity {
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
