@@ -20,6 +20,11 @@ class MainServiceNotification {
     final private MainService mService;
     private final NotificationCompat.Builder userNoteBuilder;
 
+    private long lastForegroundTime;
+
+    private enum LastContentTextSource { NONE, FLAG, MESG };
+    private LastContentTextSource lastContextTextSource = LastContentTextSource.NONE;
+
     MainServiceNotification(MainService ms, CtFwSGameState game){
         mService = ms;
 
@@ -75,9 +80,13 @@ class MainServiceNotification {
             @Override
             public void onCtFwSFlags(CtFwSGameState game) {
                 // If flags are hidden or there aren't any captured (e.g. this is a notification
-                // of a reset to 0), don't do anything.
-                if (game.flagsVisible && (game.flagsRed + game.flagsYel > 0)) {
+                // of a reset to 0), don't do anything, unless the flags were the last thing
+                // asserted, in which case, we allow a correction.
+                if (game.flagsVisible
+                        && ((lastContextTextSource == LastContentTextSource.FLAG)
+                            || (game.flagsRed + game.flagsYel > 0))) {
                     vibrate(VIBRATE_PATTERN_FLAG);
+                    lastContextTextSource = LastContentTextSource.FLAG;
                     userNoteBuilder.setContentText(
                             String.format(mService.getResources().getString(R.string.notify_flags),
                                     game.flagsRed, game.flagsYel));
@@ -91,6 +100,7 @@ class MainServiceNotification {
                 int s = msgs.size();
                 if (s != 0) {
                     vibrate(VIBRATE_PATTERN_MSG);
+                    lastContextTextSource = LastContentTextSource.MESG;
                     userNoteBuilder.setContentText(msgs.get(s - 1).msg);
                     refreshNotification();
                 }
@@ -98,6 +108,8 @@ class MainServiceNotification {
         });
     }
 
+    // TODO make all of these configurable?
+    private final long   VIBRATE_SUPPRESS_THRESHOLD = 5000; // suppress rapid-fire buzzing
     private final long[] VIBRATE_PATTERN_NOW  = {0, 100, 100, 300, 100, 300, 100, 300}; // 'J' = .---
     private final long[] VIBRATE_PATTERN_FLAG = {0, 100, 100, 100, 100, 300, 100, 100}; // 'F' = ..-.
     private final long[] VIBRATE_PATTERN_MSG  = {0, 300, 100, 300};                     // 'M' = --
@@ -117,8 +129,14 @@ class MainServiceNotification {
     private ServiceConnection userNoteSC;
     private void refreshNotification() {
         synchronized (this) {
+            long now = System.currentTimeMillis();
             if (userNoteSC != null) {
+                // Clobber the vibration request if we probably recently did such a thing
+                if (now - lastForegroundTime < VIBRATE_SUPPRESS_THRESHOLD){
+                    userNoteBuilder.setVibrate(null);
+                }
                 mService.startForeground(MainService.NOTE_ID_USER, userNoteBuilder.build());
+                lastForegroundTime = now;
             }
         }
     }
@@ -138,7 +156,9 @@ class MainServiceNotification {
                 mService.bindService(new Intent(mService, MainService.class), userNoteSC,
                         Context.BIND_AUTO_CREATE);
             }
-            mService.startForeground(MainService.NOTE_ID_USER, userNoteBuilder.build());
+            lastContextTextSource = LastContentTextSource.FLAG;
+            userNoteBuilder.setContentText(null);
+            refreshNotification();
         }
     }
     private void ensureNoNotification() {
