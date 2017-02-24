@@ -1,4 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="server_default">tcp://ctfws-mqtt.acmetensortoys.com:1883</string>
+
     <string name="app_name">CMUKGB CtFwS Timer</string>
 
     <string name="ctfws_gameend">Game\nEnd</string>

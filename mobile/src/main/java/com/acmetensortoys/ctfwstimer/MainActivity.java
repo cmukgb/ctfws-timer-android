@@ -19,10 +19,6 @@ import android.view.View;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-
-    // TODO surely this belongs somewhere else
-    private static final String defserver = "tcp://ctfws-mqtt.ietfng.org:1883";
-
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
     private MainService.LocalBinder mSrvBinder; // set once connection completed
@@ -68,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if (sp.getString("server", null) == null) {
-            sp.edit().putString("server", defserver).apply();
+            sp.edit().putString("server", getString(R.string.server_default)).apply();
         }
         if (BuildConfig.DEBUG && sp.getString("server", null) == null) {
             throw new AssertionError("Shared Preferences not sticking!");

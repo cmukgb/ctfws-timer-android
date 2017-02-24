@@ -5,7 +5,7 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:key="server"
-        android:defaultValue="tcp://ctfws-mqtt.ietfng.org:1883"
+        android:defaultValue="@string/server_default"
         android:title="@string/preftext_mqtt" />
     <CheckBoxPreference
         android:defaultValue="true"
