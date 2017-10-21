@@ -22,14 +22,13 @@ public class CtFwSGameState {
     }
 
     // Game time
-
     private boolean configured = false;
-    private long startT;     // NTP seconds for game start
+    private long startT;     // POSIX seconds for game start
     private int  setupD;
     private int  rounds;
     private int  roundD;
     private int  gameIx;
-    private long endT = 0;   // NTP seconds for game end (if >= startT)
+    private long endT = 0;   // POSIX seconds for game end (if >= startT)
 
     public void fromMqttConfigMessage(String st) {
         String tm = st.trim();
@@ -131,12 +130,10 @@ public class CtFwSGameState {
     }
 
     // Game score
-
     public int  flagsTotal;
     public boolean flagsVisible = false;
     public int  flagsRed = 0;
     public int  flagsYel = 0;
-
     public void fromMqttFlagsMessage(String st) {
         String tm = st.trim();
         switch(tm) {
@@ -166,7 +163,6 @@ public class CtFwSGameState {
     }
 
     // Informative messages handling
-
     public class Msg {
         public final long when;
         public final String msg;
@@ -178,7 +174,6 @@ public class CtFwSGameState {
     }
     private final List<Msg> msgs = new ArrayList<>();
     private long lastMsgTimestamp;
-
     public void onNewMessage(String str) {
         Scanner s = new Scanner(str);
         long t;
@@ -205,7 +200,6 @@ public class CtFwSGameState {
     }
 
     // Observer interface
-
     public interface Observer {
         // Called when the game configuration parameters change
         void onCtFwSConfigure(CtFwSGameState game);

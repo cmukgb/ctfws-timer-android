@@ -4,5 +4,4 @@
     <string name="ctfws_gameend">Game\nEnd</string>
     <string name="ctfws_gamestart">Game\nStart</string>
     <string name="ctfws_jailbreak">Jailbreak\n%1$d of %2$d</string>
-    <string name="ctfws_flags">%1$d Flags:</string>
 </resources>
