@@ -132,6 +132,71 @@
             android:lines="10"
             android:scrollbars="vertical"
             android:gravity="bottom" />
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <Button
+                    android:id="@+id/btn_wait_short"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wait_short" />
+
+                <ProgressBar
+                    android:id="@+id/pb_wait_short"
+                    style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:indeterminate="false"
+                    android:padding="5dp"
+                    android:visibility="invisible" />
+
+                <Chronometer
+                    android:id="@+id/ch_wait_short"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:visibility="invisible" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <Button
+                    android:id="@+id/btn_wait_long"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/wait_long" />
+
+                <ProgressBar
+                    android:id="@+id/pb_wait_long"
+                    style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:indeterminate="false"
+                    android:padding="5dp"
+                    android:visibility="invisible" />
+
+                <Chronometer
+                    android:id="@+id/ch_wait_long"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:visibility="invisible" />
+            </TableRow>
+
+        </TableLayout>
     </LinearLayout>
 
     <LinearLayout

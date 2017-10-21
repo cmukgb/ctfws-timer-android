@@ -3,10 +3,12 @@ package com.acmetensortoys.ctfwstimer;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,9 +24,43 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     final private Activity mAct;
     String gameStateLabelText;
 
+    private StunTimer stun_short, stun_long;
+
     CtFwSDisplayLocal(Activity a) {
         mAct = a;
         gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
+
+        stun_short = new StunTimer(
+                (Chronometer)mAct.findViewById(R.id.ch_wait_short),
+                (ProgressBar)mAct.findViewById(R.id.pb_wait_short),
+                10000);
+        wireTimer(R.id.btn_wait_short, stun_short);
+
+        stun_long = new StunTimer(
+                (Chronometer)mAct.findViewById(R.id.ch_wait_long),
+                (ProgressBar)mAct.findViewById(R.id.pb_wait_long),
+                60000);
+        wireTimer(R.id.btn_wait_long, stun_long);
+    }
+
+    private void wireTimer(int vid, final StunTimer st) {
+        ((Button)mAct.findViewById(vid))
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startTimer(st, System.currentTimeMillis());
+                    }
+                });
+    }
+
+    public void timersToBundle(Bundle out, String key) {
+        out.putLongArray(key, new long[]{ stun_short.wallEndMS, stun_long.wallEndMS });
+    }
+    public void timersFromBundle(Bundle in, String key) {
+        long[] es = in.getLongArray(key);
+        if(es == null) { return; }
+        if(es.length > 0) { resumeTimer(stun_short, es[0]); }
+        if(es.length > 1) { resumeTimer(stun_long,  es[1]); }
     }
 
     private void doSetGameStateLabelText(final CtFwSGameState gs, String rationale) {
@@ -288,5 +324,50 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 }
             });
         }
+    }
+
+    // Stun timers
+    private class StunTimer {
+        final Chronometer ch;
+        final ProgressBar pb;
+        final int ms;
+        long wallEndMS = 0;
+
+        StunTimer(Chronometer ch, ProgressBar pb, int ms) {
+            this.ch = ch;
+            this.pb = pb;
+            this.ms = ms;
+        }
+    }
+
+    private void startTimer(StunTimer st, long wallStart) {
+        resumeTimer(st, wallStart + st.ms);
+    }
+
+    private void resumeTimer(final StunTimer st, final long wallEnd) {
+        final long nowWall = System.currentTimeMillis();
+        if (nowWall < wallEnd) {
+            st.ch.setOnChronometerTickListener(null);
+            st.ch.setVisibility(View.INVISIBLE);
+            st.pb.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        final long nowEla = SystemClock.elapsedRealtime();
+        final long tbcf = nowWall - nowEla;
+
+        st.ch.setBase(wallEnd - st.ms - tbcf);
+        st.ch.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                final long nowAbsCB = System.currentTimeMillis();
+                st.pb.setProgress((int) (wallEnd - nowAbsCB));
+            }
+        });
+
+        st.pb.setProgress((int) (wallEnd - nowWall));
+        st.ch.start();
+        st.ch.setVisibility(View.VISIBLE);
+        st.pb.setVisibility(View.VISIBLE);
     }
 }

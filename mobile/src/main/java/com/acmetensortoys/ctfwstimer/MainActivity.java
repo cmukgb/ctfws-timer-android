@@ -108,6 +108,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private final String SIS_KEY_TMR_FINI = "tmr-ends";
+
+    @Override
+    public void onRestoreInstanceState(Bundle in) {
+        super.onRestoreInstanceState(in);
+        mCdl.timersFromBundle(in, SIS_KEY_TMR_FINI);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        mCdl.timersToBundle(out, SIS_KEY_TMR_FINI);
+    }
+
     @Override
     protected void onStop() {
         Log.d("CtFwS", "onStop");

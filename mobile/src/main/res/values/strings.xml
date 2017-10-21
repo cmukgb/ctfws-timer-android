@@ -37,6 +37,9 @@
 
     <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 
+    <string name="wait_long">Wait 60</string>
+    <string name="wait_short">Wait 10</string>
+
     <string name="about_imagealt">The CMUKGB Shield Logo</string>
     <string name="about_text"><![CDATA[
         <center>
