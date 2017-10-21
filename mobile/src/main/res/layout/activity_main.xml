@@ -45,6 +45,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/pb_jailbreak"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:indeterminate="false"
                     android:max="100"
@@ -55,7 +56,8 @@
                 <Chronometer
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/ch_jailbreak" />
+                    android:id="@+id/ch_jailbreak"
+                    android:layout_gravity="center_vertical" />
 
             </TableRow>
 
@@ -79,6 +81,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/pb_gameProgress"
+                    android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:indeterminate="false"
                     android:padding="5dp" />
@@ -87,6 +90,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/ch_gameProgress"
+                    android:layout_gravity="center_vertical"
                     android:visibility="invisible" />
 
             </TableRow>

@@ -27,7 +27,7 @@
     <string name="mqtt_uri_label">Server URI:</string>
     <string name="mqtt_state_label">Server State:</string>
     <string name="mqtt_conn">Connected but not subscribed</string>
-    <string name="mqtt_disconn">Disconnected</string>
+    <string name="mqtt_disconn">Disconnected (tap to retry now)</string>
     <string name="mqtt_subbed">Subscribed</string>
 
     <string name="preftext_mqtt">Set MQTT Server</string>
