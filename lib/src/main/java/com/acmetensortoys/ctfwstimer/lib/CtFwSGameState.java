@@ -30,7 +30,7 @@ public class CtFwSGameState {
     private int  gameIx;
     private long endT = 0;   // POSIX seconds for game end (if >= startT)
 
-    public void fromMqttConfigMessage(String st) {
+    public synchronized void fromMqttConfigMessage(String st) {
         String tm = st.trim();
         switch (tm) {
             case "none":
@@ -39,12 +39,12 @@ public class CtFwSGameState {
             default:
                 try {
                     Scanner s = new Scanner(tm);
-                    this.startT     = s.nextLong();
-                    this.setupD     = s.nextInt();
-                    this.rounds     = s.nextInt();
-                    this.roundD     = s.nextInt();
+                    this.startT = s.nextLong();
+                    this.setupD = s.nextInt();
+                    this.rounds = s.nextInt();
+                    this.roundD = s.nextInt();
                     this.flagsTotal = s.nextInt();
-                    this.gameIx     = s.nextInt();
+                    this.gameIx = s.nextInt();
                     this.configured = true;
                 } catch (NoSuchElementException e) {
                     this.configured = false;
@@ -53,76 +53,80 @@ public class CtFwSGameState {
         }
         notifyConfigEtAl();
     }
-    public String toMqttConfigMessage() {
+    public synchronized String toMqttConfigMessage() {
         if (!configured) {
             return "none";
         }
 
-        return String.format(Locale.ROOT, "%d %d %d %d %d", startT, setupD, rounds, roundD, flagsTotal);
+        return String.format(Locale.ROOT, "%d %d %d %d %d",
+                startT, setupD, rounds, roundD, flagsTotal);
     }
-    public void deconfigure() {
+    public synchronized void deconfigure() {
         this.configured = false;
         notifyConfigEtAl();
     }
-    public void setEndT(long endT) {
-        this.endT = endT;
-        notifyConfigEtAl();
+    public synchronized void setEndT(long endT) {
+            this.endT = endT;
+            notifyConfigEtAl();
     }
 
     public class Now {
         public String rationale = null; // null if game is in play, otherwise other fields invalid
         public boolean stop = false;
         public int round = 0;  // 0 for setup
-        public long roundStart = 0, roundEnd = 0; // NTP seconds
+        public long roundStart = 0, roundEnd = 0; // POSIX seconds
 
-        public long wallMS; // timestamp at object creation: NTP time * 1000 (i.e. msec)
+        public long wallMS; // timestamp at object creation: POSIX time * 1000 (i.e. msec)
     }
+
     public Now getNow(long wallMS) {
         Now res = new Now();
         res.wallMS = wallMS;
-
         long now = wallMS/1000;
-        if (!configured) {
-            res.rationale = "Game not configured!";
-            res.stop = true;
-        } else if (endT >= startT) {
-            res.rationale = "Game over!";
-            res.stop = true;
-        } else if (now < startT) {
-            res.rationale = "Start time in the future!";
-            res.roundStart = res.roundEnd = startT;
-        }
-        if (res.rationale != null) {
+
+        synchronized (this) {
+            if (!configured) {
+                res.rationale = "Game not configured!";
+                res.stop = true;
+            } else if (endT >= startT) {
+                res.rationale = "Game over!";
+                res.stop = true;
+            } else if (now < startT) {
+                res.rationale = "Start time in the future!";
+                res.roundStart = res.roundEnd = startT;
+            }
+            if (res.rationale != null) {
+                return res;
+            }
+            long elapsed = now - startT;
+            if (elapsed < setupD) {
+                res.round = 0;
+                res.roundStart = startT;
+                res.roundEnd = startT + setupD;
+                return res;
+            }
+            elapsed -= setupD;
+            res.round = (int) (elapsed / roundD);
+            if (res.round >= rounds) {
+                res.rationale = "Game over!";
+                res.stop = true;
+                return res;
+            }
+            res.roundStart = startT + setupD + (res.round * roundD);
+            res.roundEnd = res.roundStart + roundD;
+            res.round += 1;
             return res;
         }
-        long elapsed = now - startT;
-        if (elapsed < setupD) {
-            res.round = 0;
-            res.roundStart = startT;
-            res.roundEnd = startT + setupD;
-            return res;
-        }
-        elapsed -= setupD;
-        res.round = (int)(elapsed / roundD);
-        if (res.round >= rounds) {
-            res.rationale = "Game over!";
-            res.stop = true;
-            return res;
-        }
-        res.roundStart = startT + setupD + (res.round * roundD);
-        res.roundEnd = res.roundStart + roundD;
-        res.round += 1;
-        return res;
     }
-    public boolean isConfigured(){
-        return configured;
-    }
+
+    // Callbacks used for observers, which run in synchronized(this) context.  Generally
+    // unwise to call these outside such a context.
+    public boolean isConfigured(){ return configured; }
     public int getGameIx() { return gameIx; }
     public long getStartT() { return startT; }
     public long getFirstRoundStartT() { return startT + setupD; }
     public int getRounds() { return rounds; }
     public int getComputedGameDuration() { return rounds * roundD ; }
-
     // Leaves off the natural endT comparison so that messages can be posted after the
     // game ends and still count as part of this one (i.e. still be displayed).
     private boolean isMessageTimeWithin(long time) {
@@ -134,7 +138,7 @@ public class CtFwSGameState {
     public boolean flagsVisible = false;
     public int  flagsRed = 0;
     public int  flagsYel = 0;
-    public void fromMqttFlagsMessage(String st) {
+    public synchronized void fromMqttFlagsMessage(String st) {
         String tm = st.trim();
         switch(tm) {
             case "?":
@@ -154,7 +158,7 @@ public class CtFwSGameState {
         }
         notifyFlags();
     }
-    public String toMqttFlagsMessage() {
+    public synchronized String toMqttFlagsMessage() {
         if (!configured || !flagsVisible) {
             return "?";
         }
@@ -183,19 +187,25 @@ public class CtFwSGameState {
         } catch (NoSuchElementException nse) {
             // Maybe they forgot a time stamp.  That's not ideal, but... fake it?
             // XXX Back off a bit, for time sync reasons
-            lastMsgTimestamp = mT.wallMS()/1000 - 30;
-            msgs.add(new Msg(lastMsgTimestamp, str));
-            notifyMessages();
-            return;
+            synchronized (this) {
+                lastMsgTimestamp = mT.wallMS() / 1000 - 30;
+                msgs.add(new Msg(lastMsgTimestamp, str));
+                notifyMessages();
+                return;
+            }
         }
 
-        // If there is no configuration, assume the message is new enough
-        // If there *is* a configuration, check the time.
-        if (isMessageTimeWithin(t) && (lastMsgTimestamp <= t)) {
-            s.useDelimiter("\\z");
-            lastMsgTimestamp = t;
-            msgs.add(new Msg(lastMsgTimestamp, s.next().trim()));
-            notifyMessages();
+        s.useDelimiter("\\z");
+        String msg = s.next().trim();
+
+        synchronized (this) {
+            // If there is no configuration, assume the message is new enough
+            // If there *is* a configuration, check the time.
+            if (isMessageTimeWithin(t) && (lastMsgTimestamp <= t)) {
+                lastMsgTimestamp = t;
+                msgs.add(new Msg(t, msg));
+                notifyMessages();
+            }
         }
     }
 
@@ -218,24 +228,18 @@ public class CtFwSGameState {
         void onCtFwSMessage(CtFwSGameState game, List<Msg> msgs);
     }
     final private Set<Observer> mObsvs = new HashSet<>();
-    private void notifyFlags() {
-        synchronized(this) {
-            for (Observer o : mObsvs) { o.onCtFwSFlags(this); }
-        }
+    private synchronized void notifyFlags() {
+        for (Observer o : mObsvs) { o.onCtFwSFlags(this); }
     }
-    private void notifyMessages() {
-        synchronized(this) {
-            for (Observer o : mObsvs) { o.onCtFwSMessage(this, msgs); }
-        }
+    private synchronized void notifyMessages() {
+        for (Observer o : mObsvs) { o.onCtFwSMessage(this, msgs); }
     }
-    private void notifyConfigEtAl() {
+    private synchronized void notifyConfigEtAl() {
         if (!isMessageTimeWithin(lastMsgTimestamp)) {
             msgs.clear();
             notifyMessages();
         }
-        synchronized(this) {
-            for (Observer o : mObsvs) { o.onCtFwSConfigure(this); }
-        }
+        for (Observer o : mObsvs) { o.onCtFwSConfigure(this); }
         notifyNow();
     }
     private final Runnable futureNotifyNow = new Runnable() {
@@ -244,32 +248,25 @@ public class CtFwSGameState {
             notifyNow();
         }
     };
-    private void notifyNow() {
+
+    private synchronized void notifyNow() {
         mT.cancelPost(futureNotifyNow);
         Now n = getNow(mT.wallMS());
-        synchronized(this) {
-            for (Observer o : mObsvs) {
-                o.onCtFwSNow(this, n);
-            }
-            if (n.rationale == null || !n.stop) {
-                mT.postDelay(futureNotifyNow, n.roundEnd*1000 - n.wallMS);
+        if (n.rationale == null || !n.stop) {
+            mT.postDelay(futureNotifyNow, n.roundEnd*1000 - n.wallMS);
+        }
+        for (Observer o : mObsvs) { o.onCtFwSNow(this, n); }
+    }
+    public synchronized void registerObserver(Observer d) {
+        if (mObsvs.add(d)) {
+            // Synchronize observer with game state as of right now.
+            d.onCtFwSConfigure(this);
+            d.onCtFwSMessage(this, msgs);
+            if (configured) {
+                d.onCtFwSFlags(this);
+                d.onCtFwSNow(this, getNow(mT.wallMS()));
             }
         }
     }
-    public void registerObserver(Observer d) {
-        synchronized(this) {
-            if (mObsvs.add(d)) {
-                // Synchronize observer with game state as of right now.
-                d.onCtFwSConfigure(this);
-                d.onCtFwSMessage(this, msgs);
-                if (configured) {
-                    d.onCtFwSFlags(this);
-                    d.onCtFwSNow(this, getNow(mT.wallMS()));
-                }
-            }
-        }
-    }
-    public void unregisterObserver(Observer d) {
-        synchronized(this) { mObsvs.remove(d); }
-    }
+    public synchronized void unregisterObserver(Observer d) { mObsvs.remove(d); }
 }
