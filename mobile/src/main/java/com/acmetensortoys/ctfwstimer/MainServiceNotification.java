@@ -19,9 +19,10 @@ class MainServiceNotification {
     final private MainService mService;
     private final NotificationCompat.Builder userNoteBuilder;
 
-    private long lastForegroundTime;
+    private long lastVibrateTime;
 
-    private enum LastContentTextSource { NONE, FLAG, MESG };
+    private enum VibrationSource { NONE, BREAK, FLAG, MESG }
+    private enum LastContentTextSource { NONE, FLAG, MESG }
     private LastContentTextSource lastContextTextSource = LastContentTextSource.NONE;
 
     MainServiceNotification(MainService ms, CtFwSGameState game){
@@ -68,7 +69,7 @@ class MainServiceNotification {
                         userNoteBuilder.setSubText(now.rationale);
                     }
 
-                    vibrate(VIBRATE_PATTERN_NOW);
+                    vibrate(VibrationSource.BREAK);
                     ensureNotification();
                 } else {
                     // game no longer afoot
@@ -84,7 +85,7 @@ class MainServiceNotification {
                 if (game.flagsVisible
                         && ((lastContextTextSource == LastContentTextSource.FLAG)
                             || (game.flagsRed + game.flagsYel > 0))) {
-                    vibrate(VIBRATE_PATTERN_FLAG);
+                    vibrate(VibrationSource.FLAG);
                     lastContextTextSource = LastContentTextSource.FLAG;
                     userNoteBuilder.setContentText(
                             String.format(mService.getResources().getString(R.string.notify_flags),
@@ -98,7 +99,7 @@ class MainServiceNotification {
                 // Only do anything if we aren't clearing the message list
                 int s = msgs.size();
                 if (s != 0) {
-                    vibrate(VIBRATE_PATTERN_MSG);
+                    vibrate(VibrationSource.MESG);
                     lastContextTextSource = LastContentTextSource.MESG;
                     userNoteBuilder.setContentText(msgs.get(s - 1).msg);
                     refreshNotification();
@@ -113,12 +114,42 @@ class MainServiceNotification {
     private final long[] VIBRATE_PATTERN_FLAG = {0, 100, 100, 100, 100, 300, 100, 100}; // 'F' = ..-.
     private final long[] VIBRATE_PATTERN_MSG  = {0, 300, 100, 300};                     // 'M' = --
 
-    private void vibrate(long[] pattern) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mService.getBaseContext());
+    private void vibrate(VibrationSource vs) {
+        long now = System.currentTimeMillis();
+
+        // Clobber the vibration request if we probably recently did such a thing
+        if ((now - lastVibrateTime < VIBRATE_SUPPRESS_THRESHOLD)) {
+            vs = VibrationSource.NONE;
+        }
+
+        String pref;
+        long[] pattern;
+
+        switch(vs) {
+            case BREAK:
+                pref = "prf_vibr_jb";
+                pattern = VIBRATE_PATTERN_NOW;
+                break;
+            case FLAG:
+                pref = "prf_vibr_flag";
+                pattern = VIBRATE_PATTERN_FLAG;
+                break;
+            case MESG:
+                pref = "prf_vibr_mesg";
+                pattern = VIBRATE_PATTERN_MSG;
+                break;
+            case NONE:
+            default:
+                userNoteBuilder.setVibrate(null);
+                return;
+        }
+
         // Cam: default value is "false" because we really don't want to be vibrating if we
         //      accidentally lose our preferences somehow
-        if (sp.getBoolean("prf_vibr", false)) {
+        if (PreferenceManager.getDefaultSharedPreferences(mService.getBaseContext())
+                .getBoolean(pref, false)) {
             userNoteBuilder.setVibrate(pattern);
+            lastVibrateTime = now;
         }
         else {
             userNoteBuilder.setVibrate(null);
@@ -128,14 +159,8 @@ class MainServiceNotification {
     private ServiceConnection userNoteSC;
     private void refreshNotification() {
         synchronized (this) {
-            long now = System.currentTimeMillis();
             if (userNoteSC != null) {
-                // Clobber the vibration request if we probably recently did such a thing
-                if (now - lastForegroundTime < VIBRATE_SUPPRESS_THRESHOLD){
-                    userNoteBuilder.setVibrate(null);
-                }
                 mService.startForeground(MainService.NOTE_ID_USER, userNoteBuilder.build());
-                lastForegroundTime = now;
             }
         }
     }

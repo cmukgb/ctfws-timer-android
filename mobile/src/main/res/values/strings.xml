@@ -31,7 +31,9 @@
     <string name="mqtt_subbed">Subscribed</string>
 
     <string name="preftext_mqtt">Set MQTT Server</string>
-    <string name="preftext_vibrate">Vibrate?</string>
+    <string name="preftext_vibrate_jb">Vibrate on Jailbreak?</string>
+    <string name="preftext_vibrate_flag">Vibrate on Flag Capture?</string>
+    <string name="preftext_vibrate_mesg">Vibrate on Message?</string>
 
     <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 
