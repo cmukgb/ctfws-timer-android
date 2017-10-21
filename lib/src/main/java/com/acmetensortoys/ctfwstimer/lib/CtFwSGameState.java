@@ -10,11 +10,6 @@ import java.util.Set;
 
 public class CtFwSGameState {
 
-    public interface TimerProvider {
-        long wallMS();
-        void postDelay(Runnable r, long delayMS);
-        void cancelPost(Runnable r);
-    }
     private final TimerProvider mT;
 
     public CtFwSGameState (TimerProvider t) {

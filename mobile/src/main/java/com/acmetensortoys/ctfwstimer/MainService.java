@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+import com.acmetensortoys.ctfwstimer.lib.TimerProvider;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.android.service.MqttTraceHandler;
@@ -34,7 +35,7 @@ public class MainService extends Service {
 
     // The reason we're here!
     private final CtFwSGameState mCgs
-            = new CtFwSGameState(new CtFwSGameState.TimerProvider() {
+            = new CtFwSGameState(new TimerProvider() {
         @Override
         public long wallMS() {
             return System.currentTimeMillis();
