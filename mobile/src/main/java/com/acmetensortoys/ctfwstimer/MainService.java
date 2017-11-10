@@ -51,7 +51,6 @@ public class MainService extends Service {
             mHandler.removeCallbacks(r);
         }
     });
-    private final CtFwSCallbacksMQTT mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private MainServiceNotification mMsn; // set in onCreate
@@ -89,14 +88,17 @@ public class MainService extends Service {
         @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
             Log.e("CtFws", "Sub Fail: " + asyncActionToken, exception);
-            setMSE(MqttServerEvent.MSE_CONN);
         }
     };
     // And this handles making our subscriptions for us
-    private final MqttCallbackExtended mqttcb = new MqttCallbackExtended() {
+    private class MyMQTTCallbacks implements MqttCallbackExtended {
+        public CtFwSCallbacksMQTT mCtfwscbs;
+
         @Override
         public void connectComplete(boolean reconnect, String serverURI) {
             Log.d("CtFwS", "Conn OK 2 srv=" + serverURI + " reconn=" + reconnect);
+             mCtfwscbs = new CtFwSCallbacksMQTT(mCgs);
+
             String p = "ctfws/game/";
             try {
                 mMqc.subscribe(p + "config", 2, null, subal, mCtfwscbs.onConfig);
@@ -113,6 +115,8 @@ public class MainService extends Service {
         @Override
         public void connectionLost(Throwable cause) {
             Log.d("CtFwS", "Conn Lost: " + cause, cause);
+            mCtfwscbs.dispose();
+            mCtfwscbs = null;
             setMSE(MqttServerEvent.MSE_DISCONN);
         }
 
@@ -127,7 +131,9 @@ public class MainService extends Service {
             Log.d("CtFwS", "Delivery OK");
         }
     };
-    // And this handles yet more about connecting
+    private final MyMQTTCallbacks mqttcb = new MyMQTTCallbacks();
+
+        // And this handles yet more about connecting
     private final IMqttActionListener mqttal = new IMqttActionListener() {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
@@ -138,7 +144,8 @@ public class MainService extends Service {
             } else {
                 Log.d("Service", "IS STALE CONN");
                 try {
-                    c.disconnect().waitForCompletion();
+                    // TODO Should we waitforcompletion here?
+                    c.disconnect();
                 } catch (MqttException me) {
                     // Drop it, we've already dropped the client handle
                 }
@@ -163,6 +170,19 @@ public class MainService extends Service {
         if (mMqc != null) {
             mMqc.setCallback(null);
 
+            // Observationally, it looks like .close() below isn't enough!  Deliberately
+            // fling unsubscriptions at the server.
+            try {
+                String p = "ctfws/game/";
+                mMqc.unsubscribe(new String[]{
+                        p + "config", p + "endtime", p + "flags",
+                        p + "message", p + "message/player"
+                });
+            } catch (MqttException me) {
+                Log.d("Service", "domqtt discon unsub exn");
+                // *&@#&^*#@#&@#&@#
+            }
+
             // TODO: This is *really* annoying; we might leak a connection here because
             // .disconnect() is so @#*@&#*@^#*&@^ asynchronous it hurts.  There appears
             // to be no way to force its hand, and adding .waitforcompletion() here just
@@ -176,8 +196,19 @@ public class MainService extends Service {
                 // *&@#&^*#@#&@#&@#
             }
             mMqc.unregisterResources();
+
         } else {
             Log.d("Service", "domqtt no client");
+        }
+
+        // At this point, prevent the client we just shot down from making any further changes
+        // to the state machine.  This is a little grody, since you'd think we'd just have done
+        // just that, what with all the disconnecting and the closing and unregistering of
+        // callbacks, but Paho is a steaming pile of Enterprise Code and apparently loves to
+        // hold on to things.  So we are about to force a lot of NPEs by nulling out our callback
+        // holder's reference to the game state.
+        if (mqttcb.mCtfwscbs != null) {
+            mqttcb.mCtfwscbs.dispose();
         }
 
         // If we're deliberately disconnecting, tell the service about it.  Otherwise, we'll
@@ -213,7 +244,7 @@ public class MainService extends Service {
         MqttConnectOptions mco = new MqttConnectOptions();
         mco.setCleanSession(true);
         mco.setAutomaticReconnect(true);
-        mco.setKeepAliveInterval(180); // seconds
+        mco.setKeepAliveInterval(10); // seconds
         try {
             mMqc.connect(mco, null, mqttal);
         } catch (MqttException e) {
@@ -235,9 +266,9 @@ public class MainService extends Service {
 
     // MQTT Observers
     public enum MqttServerEvent {
-        MSE_DISCONN,
-        MSE_CONN,
-        MSE_SUB,
+        MSE_DISCONN,    /* No active connection */
+        MSE_CONN,       /* Connected, but not subscribed */
+        MSE_SUB,        /* Subscriptions have been registered */
     }
     private MqttServerEvent mMSE = MqttServerEvent.MSE_DISCONN;
     public interface Observer {
@@ -282,7 +313,7 @@ public class MainService extends Service {
             }
         }
         void registerObserver(Observer o) {
-            synchronized(this) {
+            synchronized(MainService.this) {
                 if (mObsvs.add(o)) {
                     // Fire off synthetic deltas to bring the observer up to date.
                     if (mMqc == null) {
@@ -295,7 +326,7 @@ public class MainService extends Service {
             }
         }
         void unregisterObserver(Observer o) {
-            synchronized(this) { mObsvs.remove(o); }
+            synchronized(MainService.this) { mObsvs.remove(o); }
         }
     }
     private final LocalBinder mBinder = new LocalBinder();

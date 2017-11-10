@@ -44,7 +44,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     private void wireTimer(int vid, final StunTimer st) {
-        ((Button)mAct.findViewById(vid))
+        mAct.findViewById(vid)
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -160,6 +160,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                             pb_jb.setProgress((int) (now.roundEnd - System.currentTimeMillis() / 1000));
                         }
                     });
+                    ch_jb.setVisibility(View.VISIBLE);
                     ch_jb.start();
                 }
             });
@@ -235,6 +236,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                     ch.setOnChronometerTickListener(null);
                     ch.setBase(SystemClock.elapsedRealtime());
                     ch.stop();
+                    ch.setVisibility(View.INVISIBLE);
                 }
             });
         }
@@ -344,12 +346,20 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
         resumeTimer(st, wallStart + st.ms);
     }
 
+    private void hideTimer(final StunTimer st) {
+        st.ch.setOnChronometerTickListener(null);
+        st.ch.setVisibility(View.INVISIBLE);
+        st.pb.setVisibility(View.INVISIBLE);
+    }
+
     private void resumeTimer(final StunTimer st, final long wallEnd) {
+        Log.d("CtFwS", "Timer start: " + st.ms);
+        st.wallEndMS = wallEnd;
+
         final long nowWall = System.currentTimeMillis();
-        if (nowWall < wallEnd) {
-            st.ch.setOnChronometerTickListener(null);
-            st.ch.setVisibility(View.INVISIBLE);
-            st.pb.setVisibility(View.INVISIBLE);
+        if (wallEnd < nowWall) {
+            Log.d("CtFwS", "Timer finished in past");
+            hideTimer(st);
             return;
         }
 
@@ -362,10 +372,13 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
             public void onChronometerTick(Chronometer chronometer) {
                 final long nowAbsCB = System.currentTimeMillis();
                 st.pb.setProgress((int) (wallEnd - nowAbsCB));
+                if (wallEnd < nowAbsCB) {
+                    hideTimer(st);
+                }
             }
         });
 
-        st.pb.setProgress((int) (wallEnd - nowWall));
+        st.pb.setMax((int) (wallEnd - nowWall));
         st.ch.start();
         st.ch.setVisibility(View.VISIBLE);
         st.pb.setVisibility(View.VISIBLE);

@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -21,7 +23,7 @@ class MainServiceNotification {
 
     private long lastVibrateTime;
 
-    private enum VibrationSource { NONE, BREAK, FLAG, MESG }
+    private enum NotificationSource { NONE, BREAK, FLAG, MESG }
     private enum LastContentTextSource { NONE, FLAG, MESG }
     private LastContentTextSource lastContextTextSource = LastContentTextSource.NONE;
 
@@ -69,7 +71,7 @@ class MainServiceNotification {
                         userNoteBuilder.setSubText(now.rationale);
                     }
 
-                    vibrate(VibrationSource.BREAK);
+                    notifyUserSomehow(NotificationSource.BREAK);
                     ensureNotification();
                 } else {
                     // game no longer afoot
@@ -85,7 +87,7 @@ class MainServiceNotification {
                 if (game.flagsVisible
                         && ((lastContextTextSource == LastContentTextSource.FLAG)
                             || (game.flagsRed + game.flagsYel > 0))) {
-                    vibrate(VibrationSource.FLAG);
+                    notifyUserSomehow(NotificationSource.FLAG);
                     lastContextTextSource = LastContentTextSource.FLAG;
                     userNoteBuilder.setContentText(
                             String.format(mService.getResources().getString(R.string.notify_flags),
@@ -99,7 +101,7 @@ class MainServiceNotification {
                 // Only do anything if we aren't clearing the message list
                 int s = msgs.size();
                 if (s != 0) {
-                    vibrate(VibrationSource.MESG);
+                    notifyUserSomehow(NotificationSource.MESG);
                     lastContextTextSource = LastContentTextSource.MESG;
                     userNoteBuilder.setContentText(msgs.get(s - 1).msg);
                     refreshNotification();
@@ -109,34 +111,42 @@ class MainServiceNotification {
     }
 
     // TODO make all of these configurable?
-    private final long   VIBRATE_SUPPRESS_THRESHOLD = 5000; // suppress rapid-fire buzzing
+    private final long NOTIFY_SUPPRESS_THRESHOLD = 5000; // suppress rapid-fire buzzing
+
     private final long[] VIBRATE_PATTERN_NOW  = {0, 100, 100, 300, 100, 300, 100, 300}; // 'J' = .---
     private final long[] VIBRATE_PATTERN_FLAG = {0, 100, 100, 100, 100, 300, 100, 100}; // 'F' = ..-.
     private final long[] VIBRATE_PATTERN_MSG  = {0, 300, 100, 300};                     // 'M' = --
 
-    private void vibrate(VibrationSource vs) {
+
+    private void notifyUserSomehow(NotificationSource vs) {
         long now = System.currentTimeMillis();
 
         // Clobber the vibration request if we probably recently did such a thing
-        if ((now - lastVibrateTime < VIBRATE_SUPPRESS_THRESHOLD)) {
-            vs = VibrationSource.NONE;
+        if ((now - lastVibrateTime < NOTIFY_SUPPRESS_THRESHOLD)) {
+            vs = NotificationSource.NONE;
         }
 
-        String pref;
-        long[] pattern;
+        String vpref;
+        long[] vpattern;
+
+        String spref;
+        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         switch(vs) {
             case BREAK:
-                pref = "prf_vibr_jb";
-                pattern = VIBRATE_PATTERN_NOW;
+                vpref = "prf_vibr_jb";
+                spref = "prf_sound_jb";
+                vpattern = VIBRATE_PATTERN_NOW;
                 break;
             case FLAG:
-                pref = "prf_vibr_flag";
-                pattern = VIBRATE_PATTERN_FLAG;
+                vpref = "prf_vibr_flag";
+                spref = "prf_sound_flag";
+                vpattern = VIBRATE_PATTERN_FLAG;
                 break;
             case MESG:
-                pref = "prf_vibr_mesg";
-                pattern = VIBRATE_PATTERN_MSG;
+                vpref = "prf_vibr_mesg";
+                spref = "prf_sound_mesg";
+                vpattern = VIBRATE_PATTERN_MSG;
                 break;
             case NONE:
             default:
@@ -147,12 +157,19 @@ class MainServiceNotification {
         // Cam: default value is "false" because we really don't want to be vibrating if we
         //      accidentally lose our preferences somehow
         if (PreferenceManager.getDefaultSharedPreferences(mService.getBaseContext())
-                .getBoolean(pref, false)) {
-            userNoteBuilder.setVibrate(pattern);
+                .getBoolean(vpref, false)) {
+            userNoteBuilder.setVibrate(vpattern);
             lastVibrateTime = now;
         }
         else {
             userNoteBuilder.setVibrate(null);
+        }
+
+        if (PreferenceManager.getDefaultSharedPreferences(mService.getBaseContext())
+            .getBoolean(spref, false)) {
+            userNoteBuilder.setSound(soundUri);
+        } else {
+            userNoteBuilder.setSound(null);
         }
     }
 

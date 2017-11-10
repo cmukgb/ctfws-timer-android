@@ -8,10 +8,14 @@ import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 class CtFwSCallbacksMQTT {
-    final private CtFwSGameState mCgs;
+    private CtFwSGameState mCgs;
 
     CtFwSCallbacksMQTT(CtFwSGameState cgs) {
         mCgs = cgs;
+    }
+
+    final public void dispose() {
+        mCgs = null;
     }
 
     final IMqttMessageListener onConfig = new IMqttMessageListener() {

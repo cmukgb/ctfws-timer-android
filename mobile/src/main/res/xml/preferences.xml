@@ -7,10 +7,16 @@
         android:key="server"
         android:defaultValue="@string/server_default"
         android:title="@string/preftext_mqtt" />
+
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="prf_vibr_jb"
         android:title="@string/preftext_vibrate_jb" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="prf_sound_jb"
+        android:title="@string/preftext_sound_jb" />
+
     <CheckBoxPreference
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,6 +27,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:defaultValue="true"
+        android:key="prf_sound_flag"
+        android:title="@string/preftext_sound_flag" />
+
+    <CheckBoxPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="true"
         android:key="prf_vibr_mesg"
         android:title="@string/preftext_vibrate_mesg" />
+    <CheckBoxPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="true"
+        android:key="prf_vibr_mesg"
+        android:title="@string/preftext_sound_mesg" />
+
 </PreferenceScreen>

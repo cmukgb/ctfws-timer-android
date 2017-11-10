@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
@@ -17,8 +18,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-// TODO There should be an I've-been-stunned timer, too.
 
 public class MainActivity extends AppCompatActivity {
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
@@ -63,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // TODO: should probably look better in landscape, too.
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         if (sp.getString("server", null) == null) {
@@ -165,7 +167,9 @@ public class MainActivity extends AppCompatActivity {
 
     // Kick the mqtt layer on a click on the status stuff
     public void onclick_connmeta(@SuppressWarnings("UnusedParameters") View v) {
-        mSrvBinder.connect(true);
+        if (mSrvBinder != null) {
+            mSrvBinder.connect(true);
+        }
     }
 
     // TODO should we be using onClick instead for routing?
@@ -174,6 +178,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {
+            case R.id.menu_reconn:
+                if (mSrvBinder != null) {
+                    mSrvBinder.connect(true);
+                }
+                return true;
             case R.id.menu_prf :
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;

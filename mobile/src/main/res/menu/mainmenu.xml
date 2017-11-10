@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:visible="true"
+        android:id="@+id/menu_reconn"
+        android:checkable="false"
         android:enabled="true"
-        android:title="@string/menutext_prf"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/menutext_reconn"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/menu_prf"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:checkable="false"/>
-    <item android:title="@string/menutext_about"
-        android:id="@+id/menu_about"
-        android:icon="@android:drawable/ic_menu_compass"
-        android:visible="true"
+        android:checkable="false"
         android:enabled="true"
-        android:checkable="false" />
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="@string/menutext_prf"
+        android:visible="true"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_about"
+        android:checkable="false"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_menu_help"
+        android:title="@string/menutext_about"
+        android:visible="true" />
 </menu>

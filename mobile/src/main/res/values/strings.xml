@@ -34,11 +34,14 @@
     <string name="preftext_vibrate_jb">Vibrate on Jailbreak?</string>
     <string name="preftext_vibrate_flag">Vibrate on Flag Capture?</string>
     <string name="preftext_vibrate_mesg">Vibrate on Message?</string>
+    <string name="preftext_sound_jb">Sound on Jailbreak?</string>
+    <string name="preftext_sound_flag">Sound on Flag Capture?</string>
+    <string name="preftext_sound_mesg">Sound on Message?</string>
 
     <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 
-    <string name="wait_long">Wait 60</string>
-    <string name="wait_short">Wait 10</string>
+    <string name="wait_long">Stun 60</string>
+    <string name="wait_short">Stun 10</string>
 
     <string name="about_imagealt">The CMUKGB Shield Logo</string>
     <string name="about_text"><![CDATA[
@@ -52,4 +55,5 @@
         </center>
         ]]>
     </string>
+    <string name="menutext_reconn">Reconnect</string>
 </resources>
