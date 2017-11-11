@@ -8,19 +8,18 @@ import android.os.SystemClock;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.util.List;
 
 import static android.view.View.INVISIBLE;
 
 // TODO nwf is bad at UI design; someone who isn't him should improve this
-class CtFwSDisplayLocal implements CtFwSGameState.Observer {
+class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
     final private Activity mAct;
     String gameStateLabelText;
 
@@ -63,7 +62,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
         if(es.length > 1) { resumeTimer(stun_long,  es[1]); }
     }
 
-    private void doSetGameStateLabelText(final CtFwSGameState gs, String rationale) {
+    private void doSetGameStateLabelText(final CtFwSGameStateManager gs, String rationale) {
         int gameIndex = gs.getGameIx();
 
         String pfx =
@@ -91,12 +90,12 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     @Override
-    public void onCtFwSConfigure(final CtFwSGameState gs) {
+    public void onCtFwSConfigure(final CtFwSGameStateManager gs) {
         doSetGameStateLabelText(gs, null);
     }
 
     @Override
-    public void onCtFwSNow(final CtFwSGameState gs, final CtFwSGameState.Now now) {
+    public void onCtFwSNow(final CtFwSGameStateManager gs, final CtFwSGameStateManager.Now now) {
         // time base correction factor ("when we booted"-ish)
         final long tbcf = System.currentTimeMillis() - SystemClock.elapsedRealtime();
 
@@ -219,7 +218,9 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 @Override
                 public void run() {
                     tv_flags.setText(mAct.getResources()
-                            .getQuantityString(R.plurals.ctfws_flags,gs.flagsTotal,gs.flagsTotal));
+                            .getQuantityString(R.plurals.ctfws_flags,
+                                    gs.getFlagsTotal(),
+                                    gs.getFlagsTotal()));
                 }
             });
         }
@@ -272,16 +273,16 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     @Override
-    public void onCtFwSFlags(CtFwSGameState gs) {
+    public void onCtFwSFlags(CtFwSGameStateManager gs) {
         // TODO: This stinks
 
         final StringBuffer sb = new StringBuffer();
         if (gs.isConfigured()) {
-            if (gs.flagsVisible) {
+            if (gs.getFlagsVisible()) {
                 sb.append("r=");
-                sb.append(gs.flagsRed);
+                sb.append(gs.getFlagsRed());
                 sb.append(" y=");
-                sb.append(gs.flagsYel);
+                sb.append(gs.getFlagsYel());
             } else {
                 sb.append("r=? y=?");
             }
@@ -297,7 +298,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
     }
 
     @Override
-    public void onCtFwSMessage(CtFwSGameState gs, List<CtFwSGameState.Msg> msgs) {
+    public void onCtFwSMessage(CtFwSGameStateManager gs, List<CtFwSGameStateManager.Msg> msgs) {
         final TextView msgstv = (TextView) (mAct.findViewById(R.id.msgs));
         int s = msgs.size();
 
@@ -309,7 +310,7 @@ class CtFwSDisplayLocal implements CtFwSGameState.Observer {
                 }
             });
         } else {
-            CtFwSGameState.Msg m = msgs.get(s - 1);
+            CtFwSGameStateManager.Msg m = msgs.get(s - 1);
 
             long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;
 

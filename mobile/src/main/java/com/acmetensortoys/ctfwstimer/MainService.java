@@ -10,7 +10,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 import com.acmetensortoys.ctfwstimer.lib.TimerProvider;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -34,8 +34,8 @@ public class MainService extends Service {
     private Handler mHandler; // set in onCreate
 
     // The reason we're here!
-    private final CtFwSGameState mCgs
-            = new CtFwSGameState(new TimerProvider() {
+    private final CtFwSGameStateManager mCgs
+            = new CtFwSGameStateManager(new TimerProvider() {
         @Override
         public long wallMS() {
             return System.currentTimeMillis();
@@ -297,7 +297,7 @@ public class MainService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        CtFwSGameState getGameState() {
+        CtFwSGameStateManager getGameState() {
             return mCgs;
         }
 

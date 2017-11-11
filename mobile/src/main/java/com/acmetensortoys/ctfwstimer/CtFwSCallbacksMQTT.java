@@ -2,15 +2,15 @@ package com.acmetensortoys.ctfwstimer;
 
 import android.util.Log;
 
-import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 class CtFwSCallbacksMQTT {
-    private CtFwSGameState mCgs;
+    private CtFwSGameStateManager mCgs;
 
-    CtFwSCallbacksMQTT(CtFwSGameState cgs) {
+    CtFwSCallbacksMQTT(CtFwSGameStateManager cgs) {
         mCgs = cgs;
     }
 

@@ -13,7 +13,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
-import com.acmetensortoys.ctfwstimer.lib.CtFwSGameState;
+import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ class MainServiceNotification {
     private enum LastContentTextSource { NONE, FLAG, MESG }
     private LastContentTextSource lastContextTextSource = LastContentTextSource.NONE;
 
-    MainServiceNotification(MainService ms, CtFwSGameState game){
+    MainServiceNotification(MainService ms, CtFwSGameStateManager game){
         mService = ms;
 
         Intent ni = new Intent(ms, MainActivity.class);
@@ -40,12 +40,12 @@ class MainServiceNotification {
                 .setSmallIcon(R.drawable.shield1)
                 .setContentIntent(PendingIntent.getActivity(ms, 0, ni, 0));
 
-        game.registerObserver(new CtFwSGameState.Observer() {
+        game.registerObserver(new CtFwSGameStateManager.Observer() {
             @Override
-            public void onCtFwSConfigure(CtFwSGameState game) { }
+            public void onCtFwSConfigure(CtFwSGameStateManager game) { }
 
             @Override
-            public void onCtFwSNow(CtFwSGameState game, CtFwSGameState.Now now) {
+            public void onCtFwSNow(CtFwSGameStateManager game, CtFwSGameStateManager.Now now) {
                 if (now.rationale == null || !now.stop) {
                     // game is afoot or in the future!
 
@@ -89,24 +89,24 @@ class MainServiceNotification {
             }
 
             @Override
-            public void onCtFwSFlags(CtFwSGameState game) {
+            public void onCtFwSFlags(CtFwSGameStateManager game) {
                 // If flags are hidden or there aren't any captured (e.g. this is a notification
                 // of a reset to 0), don't do anything, unless the flags were the last thing
                 // asserted, in which case, we allow a correction.
-                if (game.flagsVisible
+                if (game.getFlagsVisible()
                         && ((lastContextTextSource == LastContentTextSource.FLAG)
-                            || (game.flagsRed + game.flagsYel > 0))) {
+                            || (game.getFlagsRed() + game.getFlagsYel() > 0))) {
                     notifyUserSomehow(NotificationSource.FLAG);
                     lastContextTextSource = LastContentTextSource.FLAG;
                     userNoteBuilder.setContentText(
                             String.format(mService.getResources().getString(R.string.notify_flags),
-                                    game.flagsRed, game.flagsYel));
+                                    game.getFlagsRed(), game.getFlagsYel()));
                     refreshNotification();
                 }
             }
 
             @Override
-            public void onCtFwSMessage(CtFwSGameState game, List<CtFwSGameState.Msg> msgs) {
+            public void onCtFwSMessage(CtFwSGameStateManager game, List<CtFwSGameStateManager.Msg> msgs) {
                 // Only do anything if we aren't clearing the message list
                 int s = msgs.size();
                 if (s != 0) {
