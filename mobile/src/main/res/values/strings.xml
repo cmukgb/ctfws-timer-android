@@ -22,6 +22,7 @@
 
     <string name="menutext_about">About</string>
     <string name="menutext_prf">Settings</string>
+    <string name="menutext_quit">Quit</string>
 
     <string name="mqtt_header">Connection Metadata:</string>
     <string name="mqtt_uri_label">Server URI:</string>

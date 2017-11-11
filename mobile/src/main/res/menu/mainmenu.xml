@@ -25,4 +25,9 @@
         android:icon="@android:drawable/ic_menu_help"
         android:title="@string/menutext_about"
         android:visible="true" />
+    <item
+        android:id="@+id/menu_quit"
+        android:enabled="true"
+        android:title="@string/menutext_quit"
+        android:visible="true" />
 </menu>

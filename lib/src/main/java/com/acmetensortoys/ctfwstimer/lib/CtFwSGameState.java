@@ -68,6 +68,7 @@ public class CtFwSGameState {
     public class Now {
         public String rationale = null; // null if game is in play, otherwise other fields invalid
         public boolean stop = false;
+        public boolean past = false;
         public int round = 0;  // 0 for setup
         public long roundStart = 0, roundEnd = 0; // POSIX seconds
 
@@ -84,8 +85,9 @@ public class CtFwSGameState {
                 res.rationale = "Game not configured!";
                 res.stop = true;
             } else if (endT >= startT) {
-                res.rationale = "Game over!";
+                res.rationale = "Game declared over!";
                 res.stop = true;
+                res.past = true;
             } else if (now < startT) {
                 res.rationale = "Start time in the future!";
                 res.roundStart = res.roundEnd = startT;
@@ -103,8 +105,9 @@ public class CtFwSGameState {
             elapsed -= setupD;
             res.round = (int) (elapsed / roundD);
             if (res.round >= rounds) {
-                res.rationale = "Game over!";
+                res.rationale = "Game time up!";
                 res.stop = true;
+                res.past = true;
                 return res;
             }
             res.roundStart = startT + setupD + (res.round * roundD);

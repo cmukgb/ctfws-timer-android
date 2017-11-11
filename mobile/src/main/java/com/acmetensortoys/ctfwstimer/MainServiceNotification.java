@@ -46,14 +46,16 @@ class MainServiceNotification {
 
             @Override
             public void onCtFwSNow(CtFwSGameState game, CtFwSGameState.Now now) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    userNoteBuilder.setWhen((now.roundEnd + 1) * 1000);
-                } else {
-                    userNoteBuilder.setWhen(now.roundStart * 1000);
-                }
-                userNoteBuilder.setUsesChronometer(true);
                 if (now.rationale == null || !now.stop) {
                     // game is afoot or in the future!
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        userNoteBuilder.setWhen((now.roundEnd + 1) * 1000);
+                    } else {
+                        userNoteBuilder.setWhen(now.roundStart * 1000);
+                    }
+                    userNoteBuilder.setUsesChronometer(true);
+
                     Resources rs = mService.getResources();
 
                     if (now.rationale == null) {
@@ -75,7 +77,14 @@ class MainServiceNotification {
                     ensureNotification();
                 } else {
                     // game no longer afoot
-                    ensureNoNotification();
+                    if (now.past) {
+                        userNoteBuilder.setUsesChronometer(false);
+                        userNoteBuilder.setShowWhen(false);
+                        userNoteBuilder.setContentTitle(now.rationale);
+                        userNoteBuilder.setSubText(now.rationale);
+                        refreshNotification();
+                    }
+                    ensureNoNotification(!now.past);
                 }
             }
 
@@ -202,10 +211,10 @@ class MainServiceNotification {
             refreshNotification();
         }
     }
-    private void ensureNoNotification() {
+    void ensureNoNotification(boolean remove) {
         synchronized (this) {
             if (userNoteSC != null) {
-                mService.stopForeground(true);
+                mService.stopForeground(remove);
                 mService.unbindService(userNoteSC);
                 userNoteSC = null;
             }

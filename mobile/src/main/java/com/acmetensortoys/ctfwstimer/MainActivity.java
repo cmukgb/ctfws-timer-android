@@ -189,6 +189,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.menu_about :
                 startActivity(new Intent(this, AboutActivity.class));
                 return true;
+            case R.id.menu_quit:
+                if (mSrvBinder != null) {
+                    mSrvBinder.exit();
+                }
+                finish();
+                return true;
             // Cam: Changing this doesn't appear to do anything? Leaving just in case.
             default:
                 return super.onOptionsItemSelected(mi);

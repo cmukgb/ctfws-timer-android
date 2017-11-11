@@ -328,6 +328,9 @@ public class MainService extends Service {
         void unregisterObserver(Observer o) {
             synchronized(MainService.this) { mObsvs.remove(o); }
         }
+        void exit() {
+            mMsn.ensureNoNotification(true);
+        }
     }
     private final LocalBinder mBinder = new LocalBinder();
 
