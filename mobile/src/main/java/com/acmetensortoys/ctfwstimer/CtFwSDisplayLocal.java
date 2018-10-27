@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -120,9 +122,50 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         });
     }
 
+    private Spanned htmlFromStrResId(int id) {
+        if (Build.VERSION.SDK_INT >= 24) {
+            return Html.fromHtml(mAct.getResources().getString(id), 0);
+        } else {
+            return Html.fromHtml(mAct.getResources().getString(id));
+        }
+    }
+
+    private void doSetSidesText(final CtFwSGameStateManager gs) {
+        final TextView stv = mAct.findViewById(R.id.header_sides);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                stv.setText("");
+            }
+        };
+
+        if (gs.isConfigured()) {
+            String ss = gs.getSides();
+            if (ss != null) {
+                final Spanned h;
+
+                switch(ss) {
+                    case "wd" : h = htmlFromStrResId(R.string.ctfws_sides_wd); break;
+                    case "dw" : h = htmlFromStrResId(R.string.ctfws_sides_dw); break;
+                    default   : h = htmlFromStrResId(R.string.ctfws_unknown_sides); break;
+                }
+
+                r = new Runnable() {
+                    @Override
+                    public void run() {
+                        stv.setText(h);
+                    }
+                };
+            }
+        }
+
+        stv.post(r);
+    }
+
     @Override
     public void onCtFwSConfigure(final CtFwSGameStateManager gs) {
         doSetGameStateLabelText(gs, null);
+        doSetSidesText(gs);
     }
 
     @Override
@@ -133,6 +176,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         Log.d("CtFwS", "Display game state; nowMS=" + now.wallMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
 
         doSetGameStateLabelText(gs, now);
+        doSetSidesText(gs);
 
         if (now.rationale != CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
             Log.d("CtFwS", "Rationale: " + now.rationale + " stop=" + now.stop);

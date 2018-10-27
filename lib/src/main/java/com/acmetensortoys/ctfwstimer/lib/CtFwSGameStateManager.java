@@ -17,6 +17,19 @@ public class CtFwSGameStateManager {
         mT = t;
     }
 
+    private static boolean carefulStrEq(String a, String b)
+    {
+        if (a == null) {
+            return b == null;
+        } else {
+            if (b == null) {
+                return false;
+            } else {
+                return a.equals(b);
+            }
+        }
+    }
+
     private class Game {
         // Game time
         private boolean configured = false;
@@ -28,6 +41,7 @@ public class CtFwSGameStateManager {
         private long endT = 0;   // POSIX seconds for game end (if >= startT)
 
         public int  flagsTotal;
+        public String sides_str;
 
         public boolean equals(Game g) {
             return     (this.configured == g.configured)
@@ -37,7 +51,8 @@ public class CtFwSGameStateManager {
                     && (this.roundD == g.roundD)
                     && (this.gameIx == g.gameIx)
                     && (this.endT == g.endT)
-                    && (this.flagsTotal == g.flagsTotal);
+                    && (this.flagsTotal == g.flagsTotal)
+                    && (carefulStrEq(this.sides_str, g.sides_str));
         }
     }
     private Game curstate = new Game();
@@ -50,9 +65,9 @@ public class CtFwSGameStateManager {
             case "none":
                 g.configured = false;
                 break;
-            default:
+            default: {
+                Scanner s = new Scanner(tm);
                 try {
-                    Scanner s = new Scanner(tm);
                     g.startT = s.nextLong();
                     g.setupD = s.nextInt();
                     g.rounds = s.nextInt();
@@ -63,7 +78,14 @@ public class CtFwSGameStateManager {
                 } catch (NoSuchElementException e) {
                     g.configured = false;
                 }
+
+                try {
+                    g.sides_str = s.next();
+                } catch (NoSuchElementException e) {
+                    g.sides_str = null;
+                }
                 break;
+            }
         }
         if (!curstate.equals(g)) {
             curstate = g;
@@ -161,6 +183,7 @@ public class CtFwSGameStateManager {
     public int getRounds() { return curstate.rounds; }
     public int getComputedGameDuration() { return curstate.rounds * curstate.roundD ; }
     public int getFlagsTotal() { return curstate.flagsTotal; }
+    public String getSides() { return curstate.sides_str; }
     // Leaves off the natural endT comparison so that messages can be posted after the
     // game ends and still count as part of this one (i.e. still be displayed).
     private boolean isMessageTimeWithin(long time) {

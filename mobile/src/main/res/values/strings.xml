@@ -7,6 +7,14 @@
     <string name="ctfws_gamestart">Game\nStart</string>
     <string name="ctfws_jailbreak">Jailbreak\n%1$d of %2$d</string>
 
+    <string name="ctfws_sides_wd">
+        <![CDATA[<b><font color=#a94442>Red</font></b> is defending Wean; <b><font color=#8a6d3b>Yellow</font></b> is defending Doherty.]]>
+    </string>
+    <string name="ctfws_sides_dw">
+        <![CDATA[<b><font color=#a94442>Red</font></b> is defending Doherty; <b><font color=#8a6d3b>Yellow</font></b> is defending Wean.]]>
+    </string>
+    <string name="ctfws_unknown_sides">We seem to be lost; where are we?</string>
+
     <string name="dialog_reset">Default</string>
 
     <string name="header_gamestate0">Game State: %1$s</string>
