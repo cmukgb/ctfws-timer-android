@@ -90,8 +90,16 @@ public class CtFwSGameStateManager {
             }
     }
 
+    public enum NowRationale {
+        NR_GAME_IN_PROGRESS,
+        NR_NOT_CONFIG,
+        NR_EXPLICIT_END,
+        NR_START_FUTURE,
+        NR_TIME_UP,
+    }
+
     public class Now {
-        public String rationale = null; // null if game is in play, otherwise other fields invalid
+        public NowRationale rationale = NowRationale.NR_NOT_CONFIG;
         public boolean stop = false;
         public boolean past = false;
         public int round = 0;  // 0 for setup
@@ -107,21 +115,22 @@ public class CtFwSGameStateManager {
 
         synchronized (this) {
             if (!curstate.configured) {
-                res.rationale = "Game not configured!";
+                res.rationale = NowRationale.NR_NOT_CONFIG;
                 res.stop = true;
+                return res;
             } else if (curstate.endT >= curstate.startT) {
-                res.rationale = "Game declared over!";
+                res.rationale = NowRationale.NR_EXPLICIT_END;
                 res.stop = true;
                 res.past = true;
+                return res;
             } else if (now < curstate.startT) {
-                res.rationale = "Start time in the future!";
+                res.rationale = NowRationale.NR_START_FUTURE;
                 res.roundStart = res.roundEnd = curstate.startT;
-            }
-            if (res.rationale != null) {
                 return res;
             }
             long elapsed = now - curstate.startT;
             if (elapsed < curstate.setupD) {
+                res.rationale = NowRationale.NR_GAME_IN_PROGRESS;
                 res.round = 0;
                 res.roundStart = curstate.startT;
                 res.roundEnd = curstate.startT + curstate.setupD;
@@ -130,11 +139,12 @@ public class CtFwSGameStateManager {
             elapsed -= curstate.setupD;
             res.round = (int) (elapsed / curstate.roundD);
             if (res.round >= curstate.rounds) {
-                res.rationale = "Game time up!";
+                res.rationale = NowRationale.NR_TIME_UP;
                 res.stop = true;
                 res.past = true;
                 return res;
             }
+            res.rationale = NowRationale.NR_GAME_IN_PROGRESS;
             res.roundStart = curstate.startT + curstate.setupD + (res.round * curstate.roundD);
             res.roundEnd = res.roundStart + curstate.roundD;
             res.round += 1;
@@ -307,7 +317,7 @@ public class CtFwSGameStateManager {
     private synchronized void notifyNow() {
         mT.cancelPost(futureNotifyNow);
         Now n = getNow(mT.wallMS());
-        if (n.rationale == null || !n.stop) {
+        if (n.rationale == NowRationale.NR_GAME_IN_PROGRESS || !n.stop) {
             mT.postDelay(futureNotifyNow, n.roundEnd*1000 - n.wallMS);
         }
         for (Observer o : mObsvs) { o.onCtFwSNow(this, n); }

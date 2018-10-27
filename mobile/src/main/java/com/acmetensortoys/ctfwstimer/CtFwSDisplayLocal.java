@@ -1,6 +1,7 @@
 package com.acmetensortoys.ctfwstimer;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,22 +64,51 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         if(es.length > 1) { resumeTimer(stun_long,  es[1]); }
     }
 
-    private void doSetGameStateLabelText(final CtFwSGameStateManager gs, String rationale) {
+    private void doSetGameStateLabelText(final CtFwSGameStateManager gs,
+                                         final CtFwSGameStateManager.Now now) {
+        final Resources rs = mAct.getResources();
         int gameIndex = gs.getGameIx();
+        CtFwSGameStateManager.NowRationale nr;
 
-        String pfx =
-                (gs.isConfigured() && gameIndex != 0)
-                        ?
-                        String.format(
-                                mAct.getResources()
-                                        .getString(R.string.header_gamestateN),
-                                gameIndex)
-                        : mAct.getResources().getString(R.string.header_gamestate0);
-
-        if (rationale != null) {
-            gameStateLabelText = pfx + " " + rationale;
+        if ((now == null) || !gs.isConfigured()) {
+            nr = CtFwSGameStateManager.NowRationale.NR_NOT_CONFIG;
         } else {
-            gameStateLabelText = pfx;
+            nr = now.rationale;
+        }
+
+        if (nr == CtFwSGameStateManager.NowRationale.NR_NOT_CONFIG || gameIndex == 0) {
+            gameStateLabelText = String.format(rs.getString(R.string.header_gamestate0),
+                    rs.getString(R.string.notify_not_config));
+        } else {
+
+            String sfx;
+            switch (nr) {
+                case NR_EXPLICIT_END:
+                    sfx = rs.getString(R.string.notify_game_over);
+                    break;
+                case NR_TIME_UP:
+                    sfx = rs.getString(R.string.notify_game_over);
+                    break;
+                case NR_START_FUTURE:
+                    sfx = rs.getString(R.string.notify_start_future);
+                    break;
+                case NR_GAME_IN_PROGRESS:
+                    if (now.round == 0) {
+                        sfx = rs.getString(R.string.notify_game_setup);
+                    } else if (now.round == gs.getRounds()) {
+                        sfx = rs.getString(R.string.notify_game_end_soon);
+                    } else {
+                        sfx = rs.getString(R.string.notify_game_afoot);
+                    }
+                    break;
+                case NR_NOT_CONFIG:
+                    // Handled above; fallthru to placate static analysers
+                default:
+                    sfx = "";
+            }
+
+            gameStateLabelText = String.format(rs.getString(R.string.header_gamestateN),
+                    gameIndex, sfx);
         }
 
         final TextView gstv = mAct.findViewById(R.id.header_gamestate);
@@ -102,9 +132,9 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
         Log.d("CtFwS", "Display game state; nowMS=" + now.wallMS + " r=" + now.round + " rs=" + now.roundStart + " re=" + now.roundEnd);
 
-        doSetGameStateLabelText(gs, now.rationale);
+        doSetGameStateLabelText(gs, now);
 
-        if (now.rationale != null) {
+        if (now.rationale != CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
             Log.d("CtFwS", "Rationale: " + now.rationale + " stop=" + now.stop);
             doReset();
             return;

@@ -64,7 +64,8 @@ class MainServiceNotification {
 
             @Override
             public void onCtFwSNow(CtFwSGameStateManager game, CtFwSGameStateManager.Now now) {
-                if (now.rationale == null || !now.stop) {
+                if (now.rationale == CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS
+                        || now.rationale == CtFwSGameStateManager.NowRationale.NR_START_FUTURE) {
                     // game is afoot or in the future!
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -76,30 +77,47 @@ class MainServiceNotification {
 
                     Resources rs = mService.getResources();
 
-                    if (now.rationale == null) {
-                        userNoteBuilder.setSubText(rs.getString(R.string.notify_afoot));
+                    if (now.rationale == CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
+                        userNoteBuilder.setSubText(rs.getString(R.string.notify_game_afoot));
+                        String ct;
                         if (now.round == 0) {
-                            userNoteBuilder.setContentTitle(rs.getString(R.string.notify_gamestart));
+                            ct = rs.getString(R.string.notify_game_setup);
                         } else if (now.round == game.getRounds()) {
-                            userNoteBuilder.setContentTitle(rs.getString(R.string.notify_gameend));
+                            ct = rs.getString(R.string.notify_game_end_soon);
                         } else {
-                            userNoteBuilder.setContentTitle(
-                                    String.format(rs.getString(R.string.notify_jailbreak),
-                                            now.round, game.getRounds() - 1));
+                            ct = String.format(rs.getString(R.string.notify_jailbreak),
+                                    now.round, game.getRounds() - 1);
                         }
+                        userNoteBuilder.setContentTitle(ct);
                     } else {
-                        userNoteBuilder.setSubText(now.rationale);
+                        userNoteBuilder.setSubText(rs.getString(R.string.notify_start_future));
                     }
 
                     notifyUserSomehow(NotificationSource.BREAK);
                     ensureNotification();
                 } else {
+                    String txt;
+                    switch(now.rationale) {
+                        default:
+                        case NR_GAME_IN_PROGRESS:
+                        case NR_START_FUTURE:
+                            txt = "";
+                            break;
+                        case NR_TIME_UP:
+                        case NR_EXPLICIT_END:
+                            txt = mService.getResources().getString(R.string.notify_game_over);
+                            break;
+                        case NR_NOT_CONFIG:
+                            txt = mService.getResources().getString(R.string.notify_not_config);
+                            break;
+                    }
+
                     // game no longer afoot
                     if (now.past) {
                         userNoteBuilder.setUsesChronometer(false);
                         userNoteBuilder.setShowWhen(false);
-                        userNoteBuilder.setContentTitle(now.rationale);
-                        userNoteBuilder.setSubText(now.rationale);
+                        userNoteBuilder.setContentTitle(txt);
+                        userNoteBuilder.setSubText(txt);
                         refreshNotification();
                     }
                     ensureNoNotification(!now.past);
