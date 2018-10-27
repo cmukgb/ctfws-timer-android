@@ -244,7 +244,7 @@ public class MainService extends Service {
         MqttConnectOptions mco = new MqttConnectOptions();
         mco.setCleanSession(true);
         mco.setAutomaticReconnect(true);
-        mco.setKeepAliveInterval(10); // seconds
+        mco.setKeepAliveInterval(60); // seconds
         try {
             mMqc.connect(mco, null, mqttal);
         } catch (MqttException e) {
