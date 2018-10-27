@@ -122,11 +122,11 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         });
     }
 
-    private Spanned htmlFromStrResId(int id) {
+    private Spanned htmlFromStrResId(int id, Object... args) {
         if (Build.VERSION.SDK_INT >= 24) {
-            return Html.fromHtml(mAct.getResources().getString(id), 0);
+            return Html.fromHtml(String.format(mAct.getResources().getString(id), args), 0);
         } else {
-            return Html.fromHtml(mAct.getResources().getString(id));
+            return Html.fromHtml(String.format(mAct.getResources().getString(id), args));
         }
     }
 
@@ -180,6 +180,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         doSetGameStateLabelText(gs, null);
         doSetSidesText(gs);
         doSetFlagsLabel(gs);
+        onCtFwSFlags(gs);   /* Populate the flags field to some default */
     }
 
     @Override
@@ -352,25 +353,19 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
     @Override
     public void onCtFwSFlags(CtFwSGameStateManager gs) {
-        // TODO: This stinks
+        final Spanned h;
 
-        final StringBuffer sb = new StringBuffer();
-        if (gs.isConfigured()) {
-            if (gs.getFlagsVisible()) {
-                sb.append("r=");
-                sb.append(gs.getFlagsRed());
-                sb.append(" y=");
-                sb.append(gs.getFlagsYel());
-            } else {
-                sb.append("r=? y=?");
-            }
+        if (gs.getFlagsVisible()) {
+            h = htmlFromStrResId(R.string.flags_viz_fmt, gs.getFlagsRed(), gs.getFlagsYel());
+        } else {
+            h = htmlFromStrResId(R.string.flags_noviz);
         }
 
         final TextView msgs = mAct.findViewById(R.id.tv_flags);
         msgs.post(new Runnable() {
             @Override
             public void run() {
-                msgs.setText(sb);
+                msgs.setText(h);
             }
         });
     }

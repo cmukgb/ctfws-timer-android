@@ -17,6 +17,11 @@
 
     <string name="dialog_reset">Default</string>
 
+    <string name="flags_viz_fmt">
+        <![CDATA[<font color=#a94442><b>Red</b>: %1$d</font>, <font color=#8a6d3b><b>Yellow</b>: %2$d</font>]]>
+    </string>
+    <string name="flags_noviz">Flag scores hidden</string>
+
     <string name="header_gamestate0">Game State: %1$s</string>
     <string name="header_gamestateN" tools:ignore="PluralsCandidate">Game %1$d State: %2$s</string>
     <string name="header_egg">DO NOT TAP ON GLASS</string>
