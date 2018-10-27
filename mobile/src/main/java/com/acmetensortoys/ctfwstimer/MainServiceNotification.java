@@ -114,6 +114,7 @@ class MainServiceNotification {
 
                     // game no longer afoot
                     if (now.past) {
+                        notifyUserSomehow(NotificationSource.BREAK);
                         userNoteBuilder.setUsesChronometer(false);
                         userNoteBuilder.setShowWhen(false);
                         userNoteBuilder.setContentTitle(txt);
