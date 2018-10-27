@@ -103,7 +103,15 @@ public class MainActivity extends AppCompatActivity {
         if (mSrvBinder == null) {
             Intent si = new Intent(this, MainService.class);
             bindService(si, ctfwssc, Context.BIND_AUTO_CREATE | Context.BIND_ABOVE_CLIENT);
-        } else {
+        }
+    }
+
+    @Override
+    public void onResume() {
+        Log.d("CtFwS", "onResume");
+        super.onResume();
+
+        if (mSrvBinder != null) {
             mSrvBinder.getGameState().registerObserver(mCdl);
             mSrvBinder.registerObserver(mSrvObs);
         }
@@ -124,13 +132,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        Log.d("CtFwS", "onStop");
+    protected void onPause() {
+        Log.d("CtFwS", "onPause");
         if (mSrvBinder != null) {
             mSrvBinder.getGameState().unregisterObserver(mCdl);
             mSrvBinder.unregisterObserver(mSrvObs);
         }
 
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.d("CtFwS", "onStop");
         super.onStop();
     }
 

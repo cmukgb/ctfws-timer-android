@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.util.List;
+import java.util.ListIterator;
 
 import static android.view.View.INVISIBLE;
 
@@ -297,6 +298,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         });
     }
 
+    private CtFwSGameStateManager.Msg lastMsg;
     @Override
     public void onCtFwSMessage(CtFwSGameStateManager gs, List<CtFwSGameStateManager.Msg> msgs) {
         final TextView msgstv = (TextView) (mAct.findViewById(R.id.msgs));
@@ -309,24 +311,44 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                     msgstv.setText("");
                 }
             });
+            return;
+        }
+
+        int ix;
+        if (lastMsg == null) {
+            ix = 0;
         } else {
-            CtFwSGameStateManager.Msg m = msgs.get(s - 1);
+            ix = msgs.indexOf(lastMsg);
+            if (ix == -1) {
+                ix = 0;
+            } else if (ix == s) {
+                return;
+            } else {
+                ix = ix + 1;
+            }
+        }
+        final StringBuffer sb = new StringBuffer();
+        for (ListIterator<CtFwSGameStateManager.Msg> news = msgs.listIterator(ix);
+                news.hasNext(); ) {
+
+            CtFwSGameStateManager.Msg m = news.next();
 
             long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;
 
-            final StringBuffer sb = new StringBuffer();
             sb.append(DateUtils.formatElapsedTime(td));
             sb.append(": ");
             sb.append(m.msg);
             sb.append("\n");
 
-            msgstv.post(new Runnable() {
-                @Override
-                public void run() {
-                    msgstv.append(sb);
-                }
-            });
+            lastMsg = m;
         }
+
+        msgstv.post(new Runnable() {
+            @Override
+            public void run() {
+                msgstv.append(sb);
+            }
+        });
     }
 
     // Stun timers

@@ -221,6 +221,14 @@ public class CtFwSGameStateManager {
             }
             return (Long.valueOf(when).compareTo(Long.valueOf(m.when)));
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (! (o instanceof Msg)) {
+                return false;
+            }
+            return 0 == this.compareTo((Msg)o);
+        }
     }
     private final List<Msg> msgs = new ArrayList<>();
     private long lastMsgTimestamp;
@@ -233,23 +241,24 @@ public class CtFwSGameStateManager {
         try {
             t = s.nextLong();
         } catch (NoSuchElementException nse) {
-            // Maybe they forgot a time stamp; use round start.
-            // That's not ideal, but... fake it?
-            // XXX Back off a bit, for time sync reasons
+            // Maybe they forgot a time stamp?  Fake one up, a second ago or so,
+            // to allow for some clock drift and another message with a timestamp.
             synchronized (this) {
-                lastMsgTimestamp = 0;
-                m = new Msg(lastMsgTimestamp, str);
+                m = new Msg(mT.wallMS() - 1000, str);
             }
         }
 
         if (m == null) {
             s.useDelimiter("\\z");
-            new Msg(t, s.next().trim());
+            m = new Msg(t, s.next().trim());
         }
 
         synchronized (this) {
-            // If there is no configuration, assume the message is new enough
-            // If there *is* a configuration, check the time.
+            // Advance message clock monotonically; accept any message if there
+            // is no configuration, or check the start time to suppress old
+            // messages if we're just now coming online.
+            //
+            // XXX this is bogus
             if (isMessageTimeWithin(t) && (lastMsgTimestamp <= t)) {
                 lastMsgTimestamp = t;
                 if (!msgs.contains(m)) {
