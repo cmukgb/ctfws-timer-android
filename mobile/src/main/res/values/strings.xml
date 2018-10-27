@@ -11,6 +11,7 @@
 
     <string name="header_gamestate0">Game State:</string>
     <string name="header_gamestateN" tools:ignore="PluralsCandidate">Game %1$d State:</string>
+    <string name="header_egg">DO NOT TAP ON GLASS</string>
     <string name="header_gametimeela">Game\nTime\nElapsed</string>
     <string name="header_messages">Messages:</string>
 

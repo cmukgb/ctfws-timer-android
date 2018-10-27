@@ -53,10 +53,10 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                 });
     }
 
-    public void timersToBundle(Bundle out, String key) {
+    void timersToBundle(Bundle out, String key) {
         out.putLongArray(key, new long[]{ stun_short.wallEndMS, stun_long.wallEndMS });
     }
-    public void timersFromBundle(Bundle in, String key) {
+    void timersFromBundle(Bundle in, String key) {
         long[] es = in.getLongArray(key);
         if(es == null) { return; }
         if(es.length > 0) { resumeTimer(stun_short, es[0]); }
@@ -81,7 +81,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             gameStateLabelText = pfx;
         }
 
-        final TextView gstv = (TextView) mAct.findViewById(R.id.header_gamestate);
+        final TextView gstv = mAct.findViewById(R.id.header_gamestate);
         gstv.post(new Runnable() {
             @Override
             public void run() {
@@ -113,7 +113,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
         // Upper line text
         {
-            final TextView tv_jb = (TextView) (mAct.findViewById(R.id.tv_jailbreak));
+            final TextView tv_jb = mAct.findViewById(R.id.tv_jailbreak);
             tv_jb.post(new Runnable() {
                 @Override
                 public void run() {
@@ -132,7 +132,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
         // Upper progress bar and chronometer
         {
-            final ProgressBar pb_jb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
+            final ProgressBar pb_jb = mAct.findViewById(R.id.pb_jailbreak);
             pb_jb.post(new Runnable() {
                 @Override
                 public void run() {
@@ -142,7 +142,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                 }
             });
 
-            final Chronometer ch_jb = (Chronometer) (mAct.findViewById(R.id.ch_jailbreak));
+            final Chronometer ch_jb = mAct.findViewById(R.id.ch_jailbreak);
             ch_jb.post(new Runnable() {
                 @Override
                 public void run() {
@@ -168,7 +168,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
         // Lower progress bar and chronometer
         if (now.round > 0) {
-            final ProgressBar pb_gp = (ProgressBar) (mAct.findViewById(R.id.pb_gameProgress));
+            final ProgressBar pb_gp = mAct.findViewById(R.id.pb_gameProgress);
             pb_gp.post(new Runnable() {
                 @Override
                 public void run() {
@@ -178,7 +178,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                 }
             });
 
-            final Chronometer ch_gp = (Chronometer) (mAct.findViewById(R.id.ch_gameProgress));
+            final Chronometer ch_gp = mAct.findViewById(R.id.ch_gameProgress);
             ch_gp.post(new Runnable() {
                 @Override
                 public void run() {
@@ -195,7 +195,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                 }
             });
         } else {
-            final ProgressBar pb_gp = (ProgressBar) (mAct.findViewById(R.id.pb_gameProgress));
+            final ProgressBar pb_gp = mAct.findViewById(R.id.pb_gameProgress);
             pb_gp.post(new Runnable() {
                 @Override
                 public void run() {
@@ -203,7 +203,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                 }
             });
 
-            final Chronometer ch_gp = (Chronometer) (mAct.findViewById(R.id.ch_gameProgress));
+            final Chronometer ch_gp = mAct.findViewById(R.id.ch_gameProgress);
             ch_gp.post(new Runnable() {
                 @Override
                 public void run() {
@@ -214,7 +214,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             });
         }
         {
-            final TextView tv_flags = (TextView) (mAct.findViewById(R.id.tv_flags_label));
+            final TextView tv_flags = mAct.findViewById(R.id.tv_flags_label);
             tv_flags.post(new Runnable() {
                 @Override
                 public void run() {
@@ -231,7 +231,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         Log.d("CtFwS", "Display Reset");
 
         {
-            final Chronometer ch = (Chronometer) (mAct.findViewById(R.id.ch_jailbreak));
+            final Chronometer ch = mAct.findViewById(R.id.ch_jailbreak);
             ch.post(new Runnable() {
                 @Override
                 public void run() {
@@ -243,7 +243,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             });
         }
         {
-            final Chronometer ch = (Chronometer) (mAct.findViewById(R.id.ch_gameProgress));
+            final Chronometer ch = mAct.findViewById(R.id.ch_gameProgress);
             ch.post(new Runnable() {
                 @Override
                 public void run() {
@@ -254,7 +254,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             });
         }
         {
-            final ProgressBar pb = (ProgressBar) (mAct.findViewById(R.id.pb_jailbreak));
+            final ProgressBar pb = mAct.findViewById(R.id.pb_jailbreak);
             pb.post(new Runnable() {
                 @Override
                 public void run() {
@@ -263,7 +263,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             });
         }
         {
-            final ProgressBar pb = (ProgressBar) (mAct.findViewById(R.id.pb_gameProgress));
+            final ProgressBar pb = mAct.findViewById(R.id.pb_gameProgress);
             pb.post(new Runnable() {
                 @Override
                 public void run() {
@@ -289,7 +289,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             }
         }
 
-        final TextView msgs = (TextView) (mAct.findViewById(R.id.tv_flags));
+        final TextView msgs = mAct.findViewById(R.id.tv_flags);
         msgs.post(new Runnable() {
             @Override
             public void run() {
@@ -301,7 +301,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
     private CtFwSGameStateManager.Msg lastMsg;
     @Override
     public void onCtFwSMessage(CtFwSGameStateManager gs, List<CtFwSGameStateManager.Msg> msgs) {
-        final TextView msgstv = (TextView) (mAct.findViewById(R.id.msgs));
+        final TextView msgstv = mAct.findViewById(R.id.msgs);
         int s = msgs.size();
 
         if (s == 0) {

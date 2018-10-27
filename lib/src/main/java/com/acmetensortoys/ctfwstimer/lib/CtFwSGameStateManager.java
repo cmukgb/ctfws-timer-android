@@ -38,7 +38,7 @@ public class CtFwSGameStateManager {
                     && (this.endT == g.endT)
                     && (this.flagsTotal == g.flagsTotal);
         }
-    };
+    }
     private Game curstate = new Game();
 
     public synchronized void fromMqttConfigMessage(String st) {
@@ -219,7 +219,7 @@ public class CtFwSGameStateManager {
             if (this.when == m.when) {
                 return this.msg.compareTo(m.msg);
             }
-            return (Long.valueOf(when).compareTo(Long.valueOf(m.when)));
+            return Long.compare(this.when, m.when);
         }
 
         @Override

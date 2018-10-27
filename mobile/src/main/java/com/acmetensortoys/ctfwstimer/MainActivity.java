@@ -1,6 +1,5 @@
 package com.acmetensortoys.ctfwstimer;
 
-import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -63,6 +62,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findViewById(R.id.connmeta).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onclick_connmeta(v);
+            }
+        });
+
+        findViewById(R.id.header_gamestate).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onclick_gamestate(v);
+            }
+        });
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -73,8 +86,8 @@ public class MainActivity extends AppCompatActivity {
             throw new AssertionError("Shared Preferences not sticking!");
         }
 
-        mTvSU = (TextView) findViewById(R.id.tv_mqtt_server_uri);
-        mTvSS = (TextView) findViewById(R.id.tv_mqtt_state);
+        mTvSU = findViewById(R.id.tv_mqtt_server_uri);
+        mTvSS = findViewById(R.id.tv_mqtt_state);
 
         mCdl = new CtFwSDisplayLocal(this);
     }
@@ -158,13 +171,12 @@ public class MainActivity extends AppCompatActivity {
 
     // Every good application needs an easter egg
     private boolean egg = false;
-    @SuppressLint({"SetTextI18n"})
     public void onclick_gamestate(View v) {
         final TextView tv = (TextView) v;
         // Cam: Because every good easter egg needs to be way over-engineered.
         if (!egg) {
             egg = true;
-            tv.setText("DO NOT TAP ON GLASS");
+            tv.setText(R.string.header_egg);
             tv.postDelayed(new Runnable() {
                 public void run() {
                     if (mCdl != null) {
@@ -179,15 +191,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Kick the mqtt layer on a click on the status stuff
-    public void onclick_connmeta(@SuppressWarnings("UnusedParameters") View v) {
+    public void onclick_connmeta(View v) {
         if (mSrvBinder != null) {
             mSrvBinder.connect(true);
         }
     }
 
-    // TODO should we be using onClick instead for routing?
-    // Cam: According to official documentation, this is the preferred way to into menus, so
-    //      we're (overall) fine.
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {

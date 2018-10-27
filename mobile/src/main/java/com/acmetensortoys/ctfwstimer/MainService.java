@@ -92,7 +92,7 @@ public class MainService extends Service {
     };
     // And this handles making our subscriptions for us
     private class MyMQTTCallbacks implements MqttCallbackExtended {
-        public CtFwSCallbacksMQTT mCtfwscbs;
+        CtFwSCallbacksMQTT mCtfwscbs;
 
         @Override
         public void connectComplete(boolean reconnect, String serverURI) {
@@ -121,7 +121,7 @@ public class MainService extends Service {
         }
 
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             Log.d("CtFwS", "Message(Generic) " + topic + " : '" + message + "'" );
         }
 
@@ -130,7 +130,7 @@ public class MainService extends Service {
             // Unused, as we never publish
             Log.d("CtFwS", "Delivery OK");
         }
-    };
+    }
     private final MyMQTTCallbacks mqttcb = new MyMQTTCallbacks();
 
         // And this handles yet more about connecting
