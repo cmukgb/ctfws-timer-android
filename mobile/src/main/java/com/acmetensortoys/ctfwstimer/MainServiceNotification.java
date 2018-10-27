@@ -1,5 +1,8 @@
 package com.acmetensortoys.ctfwstimer;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +21,8 @@ import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 import java.util.List;
 
 class MainServiceNotification {
+    final public String CTFWS_GAME_CHANNEL_ID = "GAME";
+
     final private MainService mService;
     private final NotificationCompat.Builder userNoteBuilder;
 
@@ -35,10 +40,23 @@ class MainServiceNotification {
         ni.addCategory(Intent.CATEGORY_LAUNCHER);
         ni.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        userNoteBuilder = new NotificationCompat.Builder(ms)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel nc = new NotificationChannel(
+                    CTFWS_GAME_CHANNEL_ID,
+                    "Game Notifications",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            nc.enableVibration(true);
+            nc.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        }
+
+        userNoteBuilder = new NotificationCompat.Builder(ms, CTFWS_GAME_CHANNEL_ID)
                 .setOnlyAlertOnce(false)
                 .setSmallIcon(R.drawable.shield1)
                 .setContentIntent(PendingIntent.getActivity(ms, 0, ni, 0));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            userNoteBuilder.setVisibility(Notification.VISIBILITY_PUBLIC);
+        }
 
         game.registerObserver(new CtFwSGameStateManager.Observer() {
             @Override
