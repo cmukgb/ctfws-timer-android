@@ -2,6 +2,7 @@ package com.acmetensortoys.ctfwstimer.lib;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -159,6 +160,7 @@ public class CtFwSGameStateManager {
     // Game score
     private class Flags {
         public boolean flagsVisible = false;
+        public long flagsTime = 0;
         public int  flagsRed = 0;
         public int  flagsYel = 0;
 
@@ -172,21 +174,14 @@ public class CtFwSGameStateManager {
     public synchronized void fromMqttFlagsMessage(String st) {
         Flags f = new Flags();
         String tm = st.trim();
-        switch(tm) {
-            case "?":
-                f.flagsVisible = false;
-                break;
-            default:
-                Scanner s = new Scanner(tm);
-                try {
-                    f.flagsVisible = true;
-                    int red = s.nextInt();
-                    int yel = s.nextInt();
-                    f.flagsRed = red;
-                    f.flagsYel = yel;
-                } catch (NumberFormatException e) {
-                    f.flagsVisible = false;
-                }
+        Scanner s = new Scanner(tm);
+        try {
+            f.flagsTime = s.nextLong();
+            f.flagsRed = s.nextInt();
+            f.flagsYel = s.nextInt();
+            f.flagsVisible = true;
+        } catch (NumberFormatException | InputMismatchException e) {
+            f.flagsVisible = false;
         }
         if (!curflags.equals(f)) {
             curflags = f;
