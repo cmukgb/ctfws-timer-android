@@ -162,10 +162,24 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         stv.post(r);
     }
 
+    private void doSetFlagsLabel(final CtFwSGameStateManager gs) {
+        final TextView tv_flags = mAct.findViewById(R.id.tv_flags_label);
+        tv_flags.post(new Runnable() {
+            @Override
+            public void run() {
+                tv_flags.setText(mAct.getResources()
+                        .getQuantityString(R.plurals.ctfws_flags,
+                                gs.getFlagsTotal(),
+                                gs.getFlagsTotal()));
+            }
+        });
+    }
+
     @Override
     public void onCtFwSConfigure(final CtFwSGameStateManager gs) {
         doSetGameStateLabelText(gs, null);
         doSetSidesText(gs);
+        doSetFlagsLabel(gs);
     }
 
     @Override
@@ -177,6 +191,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
 
         doSetGameStateLabelText(gs, now);
         doSetSidesText(gs);
+        doSetFlagsLabel(gs);
 
         if (now.rationale != CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
             Log.d("CtFwS", "Rationale: " + now.rationale + " stop=" + now.stop);
@@ -284,18 +299,6 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                     ch_gp.setOnChronometerTickListener(null);
                     ch_gp.stop();
                     ch_gp.setVisibility(INVISIBLE);
-                }
-            });
-        }
-        {
-            final TextView tv_flags = mAct.findViewById(R.id.tv_flags_label);
-            tv_flags.post(new Runnable() {
-                @Override
-                public void run() {
-                    tv_flags.setText(mAct.getResources()
-                            .getQuantityString(R.plurals.ctfws_flags,
-                                    gs.getFlagsTotal(),
-                                    gs.getFlagsTotal()));
                 }
             });
         }
