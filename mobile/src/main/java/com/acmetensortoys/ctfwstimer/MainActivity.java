@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,10 +51,11 @@ public class MainActivity extends AppCompatActivity {
     private CtFwSDisplayLocal mCdl; // set in onStart
     private TextView mTvSU; // set in onStart
     private TextView mTvSS; // set in onStart
-    private void setServerStateText(@StringRes final int resid) {
+    private void setServerStateText(@StringRes final int resid, Object... args) {
+        final Spanned h = AndroidResourceUtils.htmlFromStrResId(getResources(), resid, args);
         mTvSS.post(new Runnable() {
             @Override
-            public void run() { mTvSS.setText(resid); }
+            public void run() { mTvSS.setText(h); }
         });
     }
 

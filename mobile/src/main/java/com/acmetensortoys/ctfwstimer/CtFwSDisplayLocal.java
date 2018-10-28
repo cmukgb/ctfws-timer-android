@@ -122,16 +122,9 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         });
     }
 
-    private Spanned htmlFromStrResId(int id, Object... args) {
-        if (Build.VERSION.SDK_INT >= 24) {
-            return Html.fromHtml(String.format(mAct.getResources().getString(id), args), 0);
-        } else {
-            return Html.fromHtml(String.format(mAct.getResources().getString(id), args));
-        }
-    }
-
     private void doSetSidesText(final CtFwSGameStateManager gs) {
         final TextView stv = mAct.findViewById(R.id.header_sides);
+        Resources rs = mAct.getResources();
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -139,15 +132,16 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             }
         };
 
-        if (gs.isConfigured()) {
+        out: if (gs.isConfigured()) {
             String ss = gs.getSides();
             if (ss != null) {
                 final Spanned h;
 
                 switch(ss) {
-                    case "wd" : h = htmlFromStrResId(R.string.ctfws_sides_wd); break;
-                    case "dw" : h = htmlFromStrResId(R.string.ctfws_sides_dw); break;
-                    default   : h = htmlFromStrResId(R.string.ctfws_unknown_sides); break;
+                    case "-"  : break out;
+                    case "wd" : h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.ctfws_sides_wd); break;
+                    case "dw" : h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.ctfws_sides_dw); break;
+                    default   : h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.ctfws_unknown_sides); break;
                 }
 
                 r = new Runnable() {
@@ -354,11 +348,13 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
     @Override
     public void onCtFwSFlags(CtFwSGameStateManager gs) {
         final Spanned h;
+        Resources rs = mAct.getResources();
 
         if (gs.getFlagsVisible()) {
-            h = htmlFromStrResId(R.string.flags_viz_fmt, gs.getFlagsRed(), gs.getFlagsYel());
+            h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.flags_viz_fmt,
+                    gs.getFlagsRed(), gs.getFlagsYel());
         } else {
-            h = htmlFromStrResId(R.string.flags_noviz);
+            h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.flags_noviz);
         }
 
         final TextView msgs = mAct.findViewById(R.id.tv_flags);
