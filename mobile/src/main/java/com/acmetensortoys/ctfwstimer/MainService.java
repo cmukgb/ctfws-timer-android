@@ -154,11 +154,14 @@ public class MainService extends Service {
 
         @Override
         public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-            Log.e("CtFws", "Conn Fail", exception);
-            if (asyncActionToken.getClient().equals(mMqc)) {
+            if (asyncActionToken.getClient().isConnected()) {
+                Log.d("CtFwS", "Spurious connection failure?", exception);
+            }
+            else if (asyncActionToken.getClient().equals(mMqc)) {
+                Log.e("CtFws", "Conn Fail", exception);
                 setMSE(MqttServerEvent.MSE_DISCONN);
             } else {
-                Log.d("Service", "IS STALE DISCONN");
+                Log.d("CtFwS", "Stale connection failure message");
             }
         }
     };
