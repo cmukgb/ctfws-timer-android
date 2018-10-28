@@ -67,4 +67,18 @@ class CtFwSCallbacksMQTT {
             mCgs.onNewMessage(str);
         }
     };
+
+    final IMqttMessageListener onMessageReset = new IMqttMessageListener() {
+        @Override
+        public void messageArrived(String topic, MqttMessage message) throws Exception {
+            String str = message.toString();
+            long before;
+            try {
+                before = Long.parseLong(message.toString());
+            } catch (NumberFormatException e) {
+                return;
+            }
+            mCgs.onMessageReset(before);
+        }
+    };
 }

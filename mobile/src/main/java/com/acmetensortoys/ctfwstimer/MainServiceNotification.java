@@ -142,16 +142,36 @@ class MainServiceNotification {
                 }
             }
 
+            private int lastMsgIx = 0;
+
             @Override
             public void onCtFwSMessage(CtFwSGameStateManager game, List<CtFwSGameStateManager.Msg> msgs) {
-                // Only do anything if we aren't clearing the message list
+                // Only do anything if we have added something to the list since last we looked
+                // and if it's in (or after) the current game.
+                // Always update the length in case this is a reset to zero.
                 int s = msgs.size();
-                if (s != 0) {
-                    notifyUserSomehow(NotificationSource.MESG);
-                    lastContextTextSource = LastContentTextSource.MESG;
-                    userNoteBuilder.setContentText(msgs.get(s - 1).msg);
-                    refreshNotification();
+                if (s > lastMsgIx) {
+                    CtFwSGameStateManager.Msg m = msgs.get(s-1);
+                    if (game.isConfigured() && m.when >= game.getStartT()) {
+                        notifyUserSomehow(NotificationSource.MESG);
+                        lastContextTextSource = LastContentTextSource.MESG;
+                        userNoteBuilder.setContentText(m.msg);
+                        refreshNotification();
+                    }
+                } else {
+                    // This is a message reset event that pruned something.  It might
+                    // have emptied the list, and if so, we should clear out the notification's
+                    // content text.  If the list isn't empty, whatever we put up last is
+                    // just fine to stay there.
+                    if (lastContextTextSource == LastContentTextSource.MESG && s == 0) {
+                        lastContextTextSource = LastContentTextSource.NONE;
+                        userNoteBuilder.setContentText(null);
+                        // Suppress vibe, we're just updating the text
+                        notifyUserSomehow(NotificationSource.NONE);
+                        refreshNotification();
+                    }
                 }
+                lastMsgIx = s;
             }
         });
     }

@@ -366,7 +366,6 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         });
     }
 
-    private CtFwSGameStateManager.Msg lastMsg;
     @Override
     public void onCtFwSMessage(CtFwSGameStateManager gs, List<CtFwSGameStateManager.Msg> msgs) {
         final TextView msgstv = mAct.findViewById(R.id.msgs);
@@ -382,21 +381,8 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             return;
         }
 
-        int ix;
-        if (lastMsg == null) {
-            ix = 0;
-        } else {
-            ix = msgs.indexOf(lastMsg);
-            if (ix == -1) {
-                ix = 0;
-            } else if (ix == s) {
-                return;
-            } else {
-                ix = ix + 1;
-            }
-        }
         final StringBuffer sb = new StringBuffer();
-        for (ListIterator<CtFwSGameStateManager.Msg> news = msgs.listIterator(ix);
+        for (ListIterator<CtFwSGameStateManager.Msg> news = msgs.listIterator(0);
                 news.hasNext(); ) {
 
             CtFwSGameStateManager.Msg m = news.next();
@@ -407,14 +393,12 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             sb.append(": ");
             sb.append(m.msg);
             sb.append("\n");
-
-            lastMsg = m;
         }
 
         msgstv.post(new Runnable() {
             @Override
             public void run() {
-                msgstv.append(sb);
+                msgstv.setText(sb);
             }
         });
     }

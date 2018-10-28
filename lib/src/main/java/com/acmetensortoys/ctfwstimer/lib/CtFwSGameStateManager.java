@@ -296,6 +296,19 @@ public class CtFwSGameStateManager {
             }
         }
     }
+    public void onMessageReset(long before) {
+        synchronized(this) {
+            while(!msgs.isEmpty()) {
+                Msg m = msgs.get(0);
+                if (m.when <= before) {
+                    msgs.remove(0);
+                } else {
+                    break;
+                }
+            }
+            notifyMessages();
+        }
+    }
 
     // Observer interface
     public interface Observer {

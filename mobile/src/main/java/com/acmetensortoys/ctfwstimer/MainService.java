@@ -107,6 +107,7 @@ public class MainService extends Service {
                 mMqc.subscribe(p + "flags", 2, null, subal, mCtfwscbs.onFlags);
                 mMqc.subscribe(p + "message", 2, null, subal, mCtfwscbs.onMessage);
                 mMqc.subscribe(p + "message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
+                mMqc.subscribe(p + "messagereset", 2, null, subal, mCtfwscbs.onMessageReset);
 
                 /* This one isn't really about the game state so much, so handle it ourselves. */
                 mMqc.subscribe(p + "timesync", 2, null, subal, new IMqttMessageListener() {
@@ -203,7 +204,7 @@ public class MainService extends Service {
                 String p = "ctfws/game/";
                 mMqc.unsubscribe(new String[]{
                         p + "config", p + "endtime", p + "flags", p + "timesync",
-                        p + "message", p + "message/player"
+                        p + "message", p + "message/player", p + "message/reset"
                 });
             } catch (MqttException me) {
                 Log.d("Service", "domqtt discon unsub exn");
