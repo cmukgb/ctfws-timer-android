@@ -46,6 +46,7 @@
     <string name="mqtt_conn">Connected but not subscribed</string>
     <string name="mqtt_disconn">Disconnected (tap to retry now)</string>
     <string name="mqtt_subbed">Subscribed</string>
+    <string name="mqtt_subbed_tdelta" tools:ignore="PluralsCandidate">Subscribed (est. %1$d sec. diff.)</string>
 
     <string name="preftext_mqtt">Set MQTT Server</string>
     <string name="preftext_vibrate_jb">Vibrate on Jailbreak?</string>

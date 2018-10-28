@@ -18,6 +18,7 @@ import org.eclipse.paho.android.service.MqttTraceHandler;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -106,6 +107,29 @@ public class MainService extends Service {
                 mMqc.subscribe(p + "flags", 2, null, subal, mCtfwscbs.onFlags);
                 mMqc.subscribe(p + "message", 2, null, subal, mCtfwscbs.onMessage);
                 mMqc.subscribe(p + "message/player", 2, null, subal, mCtfwscbs.onPlayerMessage);
+
+                /* This one isn't really about the game state so much, so handle it ourselves. */
+                mMqc.subscribe(p + "timesync", 2, null, subal, new IMqttMessageListener() {
+                    @Override
+                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                        // Retained timesync messages wouldn't make any sense; they are,
+                        // by definition, stale.  Just skip 'em.
+                        if (message.isRetained()) {
+                            return;
+                        }
+                        long rxtime = System.currentTimeMillis() / 1000;
+                        long mtime;
+                        String msg = message.toString();
+                        Log.d("CtFws", "time msg=" + msg);
+                        try {
+                            mtime = Long.parseLong(msg);
+                        } catch (NumberFormatException e) {
+                            return;
+                        }
+                        lastServerTimeDeltaEstimate = rxtime - mtime;
+                        setMSE(MqttServerEvent.MSE_SUB);
+                    }
+                });
             } catch (MqttException e) {
                 Log.e("CtFwS", "Exn Sub", e);
             }
@@ -178,7 +202,7 @@ public class MainService extends Service {
             try {
                 String p = "ctfws/game/";
                 mMqc.unsubscribe(new String[]{
-                        p + "config", p + "endtime", p + "flags",
+                        p + "config", p + "endtime", p + "flags", p + "timesync",
                         p + "message", p + "message/player"
                 });
             } catch (MqttException me) {
@@ -229,6 +253,8 @@ public class MainService extends Service {
             return;
         }
 
+        lastServerTimeDeltaEstimate = 0;
+
         // Make our MQTT client and grab callbacks on *everything in sight*
         //
         // XXX For reasons beyond my understanding, we have to use a new client ID every time
@@ -274,6 +300,7 @@ public class MainService extends Service {
         MSE_SUB,        /* Subscriptions have been registered */
     }
     private MqttServerEvent mMSE = MqttServerEvent.MSE_DISCONN;
+    private long lastServerTimeDeltaEstimate = 0;
     public interface Observer {
         void onMqttServerChanged(LocalBinder b, String sURL);
         void onMqttServerEvent(LocalBinder b, MqttServerEvent mse);
@@ -303,6 +330,7 @@ public class MainService extends Service {
         CtFwSGameStateManager getGameState() {
             return mCgs;
         }
+        long getLastServerTimeDeltaEstimate() { return lastServerTimeDeltaEstimate; }
 
         // It should not be necessary to call this except at the beginning or to force a reconnect;
         // most everything else you might want in a connect method is handled by the

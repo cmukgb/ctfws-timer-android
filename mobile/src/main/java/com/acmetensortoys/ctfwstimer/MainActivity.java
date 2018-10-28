@@ -43,7 +43,14 @@ public class MainActivity extends AppCompatActivity {
             switch(mse) {
                 case MSE_CONN: setServerStateText(R.string.mqtt_conn); break;
                 case MSE_DISCONN: setServerStateText(R.string.mqtt_disconn); break;
-                case MSE_SUB: setServerStateText(R.string.mqtt_subbed);
+                case MSE_SUB: {
+                    long lstde = b.getLastServerTimeDeltaEstimate();
+                    if (Math.abs(lstde) <= 5) {
+                        setServerStateText(R.string.mqtt_subbed);
+                    } else {
+                        setServerStateText(R.string.mqtt_subbed_tdelta, lstde);
+                    }
+                }
             }
         }
     };
