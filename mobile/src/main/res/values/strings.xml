@@ -42,6 +42,7 @@
     <string name="menutext_handbook">Handbook</string>
     <string name="menutext_prf">Settings</string>
     <string name="menutext_quit">Quit</string>
+    <string name="menutext_reconn">Reconnect</string>
 
     <string name="mqtt_uri_label">Server URI:</string>
     <string name="mqtt_state_label">Server State:</string>
@@ -75,7 +76,6 @@
         </center>
         ]]>
     </string>
-    <string name="menutext_reconn">Reconnect</string>
     <string name="hand_err"><![CDATA[
         <center>
           Terribly sorry, something has gone wrong.  Please try loading the
