@@ -1,0 +1,14 @@
+meta
+teams_territories
+players
+capture
+jail
+setup
+terms
+flags
+judges
+glyphs
+potions
+wands
+belts
+sportsmanship

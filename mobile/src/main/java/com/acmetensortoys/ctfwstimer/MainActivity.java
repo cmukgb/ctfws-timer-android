@@ -209,6 +209,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {
+            case R.id.menu_hand:
+                startActivity(new Intent(this, HandbookActivity.class));
+                return true;
             case R.id.menu_reconn:
                 if (mSrvBinder != null) {
                     mSrvBinder.connect(true);

@@ -2,6 +2,7 @@
     <string name="server_default">tcp://ctfws-mqtt.acmetensortoys.com:1883</string>
 
     <string name="app_name">CMUKGB CtFwS Timer</string>
+    <string name="app_name_hand">CMUKGB CtFwS Handbook</string>
 
     <string name="ctfws_gameend">Game\nEnd</string>
     <string name="ctfws_gamestart">Game\nStart</string>
@@ -38,6 +39,7 @@
     <string name="notify_jailbreak">Jailbreak %1$d of %2$d</string>
 
     <string name="menutext_about">About</string>
+    <string name="menutext_handbook">Handbook</string>
     <string name="menutext_prf">Settings</string>
     <string name="menutext_quit">Quit</string>
 
@@ -74,4 +76,11 @@
         ]]>
     </string>
     <string name="menutext_reconn">Reconnect</string>
+    <string name="hand_err"><![CDATA[
+        <center>
+          Terribly sorry, something has gone wrong.  Please try loading the
+          <a href="http://www.cmukgb.org/activities/ctfws.php">official rules</a>.
+        </center>
+        ]]>
+    </string>
 </resources>
