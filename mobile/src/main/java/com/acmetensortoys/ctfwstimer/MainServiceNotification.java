@@ -51,7 +51,7 @@ class MainServiceNotification {
 
         userNoteBuilder = new NotificationCompat.Builder(ms, CTFWS_GAME_CHANNEL_ID)
                 .setOnlyAlertOnce(false)
-                .setSmallIcon(R.drawable.shield1)
+                .setSmallIcon(R.drawable.ic_hammer_and_sickle)
                 .setContentIntent(PendingIntent.getActivity(ms, 0, ni, 0));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
