@@ -1,11 +1,16 @@
 package com.acmetensortoys.ctfwstimer;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
 import android.net.Uri;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,10 +22,15 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.Toast;
+
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,104 +39,105 @@ import java.util.List;
 
 public class HandbookActivity extends AppCompatActivity {
 
-    private class HandbookAdapter extends RecyclerView.Adapter<HandbookAdapter.MyVH> {
+    public static final String HAND_FILE_NAME = "handbook.html";
+    private static final String TAG = "CtFwSHandbook";
 
-        class MyVH extends RecyclerView.ViewHolder {
-            Button b;
-            MyVH(Button b) {
-                super(b);
-                this.b = b;
-            }
+    private WebView mWV;
+
+    private void display() {
+        final File dlf = new File(getFilesDir(), HAND_FILE_NAME);
+        if (dlf.exists()) {
+            /* render the version we've downloaded */
+            mWV.loadUrl(dlf.toURI().toString());
+        } else {
+            /* render the version we were shipped with instead */
+            mWV.loadUrl("file:///android_asset/hand.html");
         }
+    }
 
-        final String[] fns;
-        final View.OnClickListener ocl;
-
-        HandbookAdapter(String[] fns, View.OnClickListener ocl) {
-            this.fns = fns;
-            this.ocl = ocl;
-        }
-
-
-
+    private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
-        public MyVH onCreateViewHolder(ViewGroup parent, int tipe) {
-            Button b = new Button(HandbookActivity.this, null, R.style.Widget_AppCompat_Button_Borderless);
-            b.setOnClickListener(ocl);
-            return new MyVH(b);
+        public void onMqttServerChanged(MainService.LocalBinder b, String sURL) {
+            ;
         }
 
         @Override
-        public void onBindViewHolder(MyVH vh, int pos) {
-            try {
-                InputStream is = getAssets().open("handico/" + fns[pos] + ".png");
-                Drawable d = BitmapDrawable.createFromStream(is, fns[pos]);
-                vh.b.setBackground(d);
-            } catch (IOException ignored) {
-                String ch = fns[pos];
-                int ix = ch.indexOf('-');
-                if (ix >= 0) { ch = ch.substring(ix); }
-                vh.b.setText(ch);
-            }
+        public void onMqttServerEvent(MainService.LocalBinder b, MainService.MqttServerEvent mse) {
+            ;
         }
 
         @Override
-        public int getItemCount() {
-            return fns.length;
+        public void onHandbookFetch(MainService.LocalBinder b) {
+            display();
+            Toast.makeText(HandbookActivity.this, R.string.hand_new, Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private MainService.LocalBinder mSrvBinder;
+    private final ServiceConnection ctfwssc = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mSrvBinder = (MainService.LocalBinder) service;
+            mSrvBinder.registerObserver(mSrvObs);
+            mSrvBinder.connect(false);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mSrvBinder = null;
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_handbook);
+
+        mWV = findViewById(R.id.hand_wv);
+
+        WebSettings wvs = mWV.getSettings();
+        wvs.setBuiltInZoomControls(true);
+        wvs.setDisplayZoomControls(false);
+        display();
+    }
+
+    @Override
+    public void onStart() {
+        Log.d(TAG, "onStart");
+        super.onStart();
+
+        if (mSrvBinder == null) {
+            Intent si = new Intent(this, MainService.class);
+            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE | Context.BIND_ABOVE_CLIENT);
         }
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.d("CtFwSHandbook", "onCreate");
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_handbook);
+    public void onResume() {
+        Log.d(TAG, "onResume");
+        super.onResume();
 
-        final WebView wv = findViewById(R.id.hand_wv);
+        if (mSrvBinder != null) {
+            mSrvBinder.registerObserver(mSrvObs);
+        }
+    }
 
-        final String[] sections;
-        try {
-            InputStream is = getAssets().open("handord.txt", AssetManager.ACCESS_STREAMING);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            List<String> lines = new ArrayList<>();
-            String line;
-            while ((line = br.readLine()) != null) {
-                lines.add(line);
-            }
-            sections = lines.toArray(new String[0]);
-
-            final RecyclerView rv = findViewById(R.id.hand_tabs);
-            rv.setHasFixedSize(true);
-
-            LinearLayoutManager lm = new LinearLayoutManager(this);
-            rv.setLayoutManager(lm);
-
-            Drawable divdr = ContextCompat.getDrawable(this, R.drawable.hand_tab_div);
-            if (divdr != null) {
-                DividerItemDecoration divde = new DividerItemDecoration(rv.getContext(),
-                        lm.getOrientation());
-                divde.setDrawable(divdr);
-                rv.addItemDecoration(divde);
-            }
-
-            final View.OnClickListener ocl = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int ix = rv.getChildAdapterPosition(v);
-                    Log.d("CtFwSHandbook", "onClick avix=" + ix);
-                    if (ix != RecyclerView.NO_POSITION) {
-                        Log.d("CtFwSHandbook" , "onClick avs=" + sections[ix]);
-                        wv.loadUrl("file:///android_asset/hand.html#" + sections[ix]);
-                    }
-                }
-            };
-
-            RecyclerView.Adapter a = new HandbookAdapter(sections, ocl);
-            rv.setAdapter(a);
-        } catch (IOException ioe) {
-            Log.d("CtFwSHandbook", "IOException?", ioe);
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause");
+        if (mSrvBinder != null) {
+            mSrvBinder.unregisterObserver(mSrvObs);
         }
 
-        wv.loadUrl("file:///android_asset/hand.html");
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        unbindService(ctfwssc);
+
+        super.onDestroy();
     }
 }

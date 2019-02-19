@@ -58,6 +58,15 @@ public class MainService extends Service {
 
     public MainService() { }
 
+    // Handbook fetch logic; this is a singleton for the service, even as connections come and go.
+    private HandbookDownloader mHandDL = new HandbookDownloader(this,
+            new Runnable() {
+                @Override
+                public void run() {
+                    MainService.this.notifyHandbook();
+                }
+            });
+
     // MQTT client management
 
     private MqttAndroidClient mMqc;
@@ -131,6 +140,8 @@ public class MainService extends Service {
                         setMSE(MqttServerEvent.MSE_SUB);
                     }
                 });
+
+                mHandDL.subscribeOn(mMqc);
             } catch (MqttException e) {
                 Log.e("CtFwS", "Exn Sub", e);
             }
@@ -206,6 +217,7 @@ public class MainService extends Service {
                         p + "config", p + "endtime", p + "flags", p + "timesync",
                         p + "message", p + "message/player", p + "message/reset"
                 });
+                mHandDL.unsubscribeOn(mMqc);
             } catch (MqttException me) {
                 Log.d("Service", "domqtt discon unsub exn");
                 // *&@#&^*#@#&@#&@#
@@ -310,6 +322,7 @@ public class MainService extends Service {
     public interface Observer {
         void onMqttServerChanged(LocalBinder b, String sURL);
         void onMqttServerEvent(LocalBinder b, MqttServerEvent mse);
+        void onHandbookFetch(LocalBinder b);
     }
     private final Set<Observer> mObsvs = new HashSet<>();
     private void setMSE(MqttServerEvent mse) {
@@ -321,6 +334,11 @@ public class MainService extends Service {
     private void notifyServerChanged(String sURL) {
         synchronized(this) {
             for (Observer o : mObsvs) { o.onMqttServerChanged(mBinder, sURL); }
+        }
+    }
+    private void notifyHandbook() {
+        synchronized(this) {
+            for (Observer o : mObsvs) { o.onHandbookFetch(mBinder); }
         }
     }
 

@@ -76,11 +76,5 @@
         </center>
         ]]>
     </string>
-    <string name="hand_err"><![CDATA[
-        <center>
-          Terribly sorry, something has gone wrong.  Please try loading the
-          <a href="http://www.cmukgb.org/activities/ctfws.php">official rules</a>.
-        </center>
-        ]]>
-    </string>
+    <string name="hand_new">Fetched updated handbook!</string>
 </resources>

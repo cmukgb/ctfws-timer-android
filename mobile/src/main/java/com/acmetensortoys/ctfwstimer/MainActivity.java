@@ -56,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+
+        @Override
+        public void onHandbookFetch(MainService.LocalBinder b) {
+            ;
+        }
     };
 
     private CtFwSDisplayLocal mCdl; // set in onStart
