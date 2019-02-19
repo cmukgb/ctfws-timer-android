@@ -137,7 +137,7 @@ public class MainService extends Service {
                             return;
                         }
                         lastServerTimeDeltaEstimate = rxtime - mtime;
-                        setMSE(MqttServerEvent.MSE_SUB);
+                        notifyMSE();
                     }
                 });
 
@@ -238,7 +238,7 @@ public class MainService extends Service {
                 Log.d("Service", "domqtt disconn close mqtt", me);
             }
             mMqc.unregisterResources();
-
+            mMqc = null;
         } else {
             Log.d("Service", "domqtt no client");
         }
@@ -267,7 +267,6 @@ public class MainService extends Service {
 
         // If disconnecting is all we were told to do, we're done.
         if (server == null) {
-            mMqc = null;
             return;
         }
 
@@ -325,10 +324,15 @@ public class MainService extends Service {
         void onHandbookFetch(LocalBinder b);
     }
     private final Set<Observer> mObsvs = new HashSet<>();
+    private void notifyMSE() {
+        synchronized(this) {
+            for (Observer o : mObsvs) { o.onMqttServerEvent(mBinder, mMSE); }
+        }
+    }
     private void setMSE(MqttServerEvent mse) {
         synchronized(this) {
             mMSE = mse;
-            for (Observer o : mObsvs) { o.onMqttServerEvent(mBinder, mse); }
+            notifyMSE();
         }
     }
     private void notifyServerChanged(String sURL) {
