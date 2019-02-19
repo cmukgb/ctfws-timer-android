@@ -72,6 +72,7 @@ class CtFwSCallbacksMQTT {
         @Override
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             String str = message.toString();
+            Log.d("CtFwS", "Message(Reset): " + str);
             long before;
             try {
                 before = Long.parseLong(message.toString());

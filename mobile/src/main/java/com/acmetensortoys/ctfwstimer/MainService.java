@@ -246,6 +246,8 @@ public class MainService extends Service {
             mCgs.deconfigure();
         }
 
+        Log.d("Service", "domqtt finish disconn");
+
         notifyServerChanged(server);
 
         // If disconnecting is all we were told to do, we're done.

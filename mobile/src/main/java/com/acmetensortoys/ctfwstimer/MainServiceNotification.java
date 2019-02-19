@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
@@ -150,8 +151,10 @@ class MainServiceNotification {
                 // and if it's in (or after) the current game.
                 // Always update the length in case this is a reset to zero.
                 int s = msgs.size();
+                Log.d("CtFwSNotify", "on msg s=" + s + " lastix=" + lastMsgIx);
                 if (s > lastMsgIx) {
                     CtFwSGameStateManager.Msg m = msgs.get(s-1);
+                    Log.d("CtFwsNotify", "msg gst=" + game.getStartT() + " when=" + m.when);
                     if (game.isConfigured() && m.when >= game.getStartT()) {
                         notifyUserSomehow(NotificationSource.MESG);
                         lastContextTextSource = LastContentTextSource.MESG;

@@ -20,6 +20,9 @@ import android.view.View;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "CtFwS";
+
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
     private MainService.LocalBinder mSrvBinder; // set once connection completed
@@ -119,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
-        Log.d("CtFwS", "onStart");
+        Log.d(TAG, "onStart");
         super.onStart();
 
         if (mSrvBinder == null) {
@@ -130,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onResume() {
-        Log.d("CtFwS", "onResume");
+        Log.d(TAG, "onResume");
         super.onResume();
 
         if (mSrvBinder != null) {
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        Log.d("CtFwS", "onPause");
+        Log.d(TAG, "onPause");
         if (mSrvBinder != null) {
             mSrvBinder.getGameState().unregisterObserver(mCdl);
             mSrvBinder.unregisterObserver(mSrvObs);
@@ -166,13 +169,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        Log.d("CtFwS", "onStop");
+        Log.d(TAG, "onStop");
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        Log.d("CtFwS", "onDestroy");
+        Log.d(TAG, "onDestroy");
         unbindService(ctfwssc);
 
         super.onDestroy();
