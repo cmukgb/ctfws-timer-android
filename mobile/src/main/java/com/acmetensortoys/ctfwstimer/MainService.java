@@ -88,7 +88,8 @@ public class MainService extends Service {
         }
     };
 
-    // We'll use this common callback object for our subscriptions below
+    // We'll use this common callback object for our subscriptions below; all it does is trace
+    // events to the log for us
     private final IMqttActionListener subal = new IMqttActionListener() {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
@@ -100,6 +101,7 @@ public class MainService extends Service {
             Log.e("CtFws", "Sub Fail: " + asyncActionToken, exception);
         }
     };
+
     // And this handles making our subscriptions for us
     private class MyMQTTCallbacks implements MqttCallbackExtended {
         CtFwSCallbacksMQTT mCtfwscbs;
@@ -180,7 +182,6 @@ public class MainService extends Service {
             } else {
                 Log.d("Service", "IS STALE CONN");
                 try {
-                    // TODO Should we waitforcompletion here?
                     c.disconnect();
                 } catch (MqttException me) {
                     // Drop it, we've already dropped the client handle
@@ -300,8 +301,6 @@ public class MainService extends Service {
     }
 
     // Must hold strongly since Android only holds weakly once registered.
-    // TODO: Option for notification persistence during game?
-    // TODO: Option for polling even after game ends?
     private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
