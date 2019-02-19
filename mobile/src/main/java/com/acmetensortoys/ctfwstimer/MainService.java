@@ -219,9 +219,11 @@ public class MainService extends Service {
             // and the documentation for all of this is amazingly lacking.  Burn it all down.
             try {
                 mMqc.close();
+                mMqc.disconnect(0);
             } catch (IllegalArgumentException iae) {
-                Log.d("Service", "domqtt disconn close exn");
-                // *&@#&^*#@#&@#&@#
+                Log.d("Service", "domqtt disconn close iae", iae);
+            } catch (MqttException me) {
+                Log.d("Service", "domqtt disconn close mqtt", me);
             }
             mMqc.unregisterResources();
 
@@ -237,6 +239,7 @@ public class MainService extends Service {
         // holder's reference to the game state.
         if (mqttcb.mCtfwscbs != null) {
             mqttcb.mCtfwscbs.dispose();
+            mqttcb.mCtfwscbs = null;
         }
 
         // If we're deliberately disconnecting, tell the service about it.  Otherwise, we'll
