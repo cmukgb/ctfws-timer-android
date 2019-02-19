@@ -110,9 +110,9 @@ public class MainService extends Service {
                 mMqc.subscribe(p + "messagereset", 2, null, subal, mCtfwscbs.onMessageReset);
 
                 /* This one isn't really about the game state so much, so handle it ourselves. */
-                mMqc.subscribe(p + "timesync", 2, null, subal, new IMqttMessageListener() {
+                mMqc.subscribe("ctfws/timesync", 2, null, subal, new IMqttMessageListener() {
                     @Override
-                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                    public void messageArrived(String topic, MqttMessage message) {
                         // Retained timesync messages wouldn't make any sense; they are,
                         // by definition, stale.  Just skip 'em.
                         if (message.isRetained()) {
