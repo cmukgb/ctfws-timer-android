@@ -67,10 +67,10 @@
     <string name="about_imagealt">The CMUKGB Shield Logo</string>
     <string name="about_text"><![CDATA[
         <center>
-          <a href="http://www.cmukgb.org/activities/ctfws.php">Capture The Flag With Stuff Rules</a>
+          <a href="http://www.cmukgb.org/ctfws/">Capture The Flag With Stuff Rules</a>
           <br/>
           This project is open source under AGPLv3; see the
-            <a href="https://github.com/AcmeTensorToys/ctfws-android">GitHub Project Page</a>
+            <a href="https://github.com/cmukgb/ctfws-timer-android">GitHub Project Page</a>
           <br/>
           &#169; 2017 Nathaniel Wesley Filardo, Cameron Wong, and others
         </center>
