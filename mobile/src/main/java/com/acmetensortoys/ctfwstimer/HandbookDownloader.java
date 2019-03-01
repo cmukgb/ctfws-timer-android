@@ -20,6 +20,8 @@ public class HandbookDownloader implements IMqttMessageListener {
 
     private static String TAG = "HandbookDownloader";
 
+    private static final long HAND_MAX_LEN = 1024*1024; /* 1 MiB */
+
     private final Context mCtx;
     private final Runnable mDLFiniCB;
     private IMqttAsyncClient mMqc;
@@ -159,7 +161,7 @@ public class HandbookDownloader implements IMqttMessageListener {
             }
 
             this.downloader = new Task(mMqc);
-            this.download = new CheckedAsyncDownloader.DL(new URL(url), checksum,
+            this.download = new CheckedAsyncDownloader.DL(new URL(url), checksum, HAND_MAX_LEN,
                     new File(mCtx.getFilesDir(), HandbookActivity.HAND_FILE_NAME));
             this.downloader.execute(this.download);
         }

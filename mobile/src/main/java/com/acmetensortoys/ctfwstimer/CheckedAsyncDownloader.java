@@ -25,17 +25,20 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
     public static final long ERR_HOSTUNREACH = -4; /* Could not establish connection */
     public static final long ERR_XFER        = -5; /* Error during transfer */
     public static final long ERR_CHECKSUM    = -6; /* Checksum did not match after xfer */
+    public static final long ERR_TOO_LONG    = -7; /* File longer than maximum permitted */
 
     public static class DL {
         final URL url;
         final byte[] sha256;
         final File dest;
+        final long lengthLimit; /* In bytes, or 0 for no limit */
         long result;
 
-        public DL(URL url, byte[] sha256, File dest) {
+        public DL(URL url, byte[] sha256, long lim, File dest) {
             this.url = url;
             this.sha256 = sha256;
             this.dest = dest;
+            this.lengthLimit = lim;
             this.result = ERR_UNTRIED;
         }
     }
@@ -50,7 +53,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
             return null;
         }
 
-        for (DL dl : dls) {
+        dlfor: for (DL dl : dls) {
             try {
                 DigestInputStream is = new DigestInputStream(
                         new BufferedInputStream(new FileInputStream(dl.dest)),
@@ -116,6 +119,14 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 while ((count = is.read(data)) != -1) {
                     xfer += count;
                     os.write(data, 0, count);
+
+                    if (dl.lengthLimit > 0 && xfer > dl.lengthLimit) {
+                        is.close();
+                        os.close();
+                        dl.result = ERR_TOO_LONG;
+                        oft.delete();
+                        continue dlfor;
+                    }
                 }
 
                 is.close();
