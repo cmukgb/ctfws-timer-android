@@ -78,7 +78,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
             nr = now.rationale;
         }
 
-        if (nr == CtFwSGameStateManager.NowRationale.NR_NOT_CONFIG || gameIndex == 0) {
+        if (nr == CtFwSGameStateManager.NowRationale.NR_NOT_CONFIG) {
             gameStateLabelText = String.format(rs.getString(R.string.header_gamestate0),
                     rs.getString(R.string.notify_not_config));
         } else {
@@ -109,8 +109,13 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                     sfx = "";
             }
 
-            gameStateLabelText = String.format(rs.getString(R.string.header_gamestateN),
-                    gameIndex, sfx);
+            if (gameIndex == 0) {
+                gameStateLabelText = String.format(rs.getString(R.string.header_gamestate0),
+                        sfx);
+            } else {
+                gameStateLabelText = String.format(rs.getString(R.string.header_gamestateN),
+                        gameIndex, sfx);
+            }
         }
 
         final TextView gstv = mAct.findViewById(R.id.header_gamestate);
