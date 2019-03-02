@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -60,6 +61,7 @@ public class MainService extends Service {
 
     // Handbook fetch logic; this is a singleton for the service, even as connections come and go.
     private HandbookDownloader mHandDL = new HandbookDownloader(this,
+            new Handler(Looper.getMainLooper()),
             new Runnable() {
                 @Override
                 public void run() {

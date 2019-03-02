@@ -1,6 +1,7 @@
 package com.acmetensortoys.ctfwstimer;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.CheckedAsyncDownloader;
@@ -25,9 +26,12 @@ public class HandbookDownloader implements IMqttMessageListener {
     private final Context mCtx;
     private final Runnable mDLFiniCB;
     private IMqttAsyncClient mMqc;
+    private Handler mHdl;
+    private Runnable nextSubRunnable;
 
-    public HandbookDownloader(Context mCtx, Runnable dlfinicb) {
-        this.mCtx = mCtx;
+    public HandbookDownloader(Context ctx, Handler hdl, Runnable dlfinicb) {
+        this.mCtx = ctx;
+        this.mHdl = hdl;
         this.mDLFiniCB = dlfinicb;
     }
 
@@ -69,17 +73,37 @@ public class HandbookDownloader implements IMqttMessageListener {
         }
 
         private void fini() {
-            if (mqc == mMqc) {
-                try {
-                    subscribe(mqc);
-                } catch (MqttException mqe) {
-                    /*
-                     * Well this stinks.  Presumably it is because something has gone
-                     * wrong somewhere else and we will notice shortly.
-                     */
-                    ;
+            /*
+             * Try to resubscribe in a while.
+             * This is a very crude kind of rate limiting.
+             */
+            synchronized (this) {
+                if (nextSubRunnable != null) {
+                    mHdl.removeCallbacks(nextSubRunnable);
                 }
+                nextSubRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "Resubscribing to handbook topic");
+                        synchronized (HandbookDownloader.this) {
+                            if (mqc == mMqc) {
+                                try {
+                                    subscribe(mqc);
+                                    nextSubRunnable = null;
+                                } catch (MqttException mqe) {
+                                    /*
+                                     * Well this stinks.  Presumably it is because
+                                     * something has gone wrong somewhere else and
+                                     * we will notice shortly.
+                                     */
+                                }
+                            }
+                        }
+                    }
+                };
+                mHdl.postDelayed(nextSubRunnable, 60000);
             }
+
             HandbookDownloader.this.downloader = null;
             HandbookDownloader.this.download = null;
         }
@@ -173,6 +197,9 @@ public class HandbookDownloader implements IMqttMessageListener {
 
     public void subscribeOn(IMqttAsyncClient mqc) throws MqttException {
         synchronized (this) {
+            if (nextSubRunnable != null) {
+                mHdl.removeCallbacks(nextSubRunnable);
+            }
             mMqc = mqc;
             subscribe(mqc);
         }
@@ -184,6 +211,9 @@ public class HandbookDownloader implements IMqttMessageListener {
 
     public void unsubscribeOn(IMqttAsyncClient mqc) throws MqttException {
         synchronized (this) {
+            if (nextSubRunnable != null) {
+                mHdl.removeCallbacks(nextSubRunnable);
+            }
             unsubscribe(mqc);
             mMqc = null;
         }
