@@ -48,6 +48,9 @@ class MainServiceNotification {
                     NotificationManager.IMPORTANCE_DEFAULT);
             nc.enableVibration(true);
             nc.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            NotificationManager nm = (NotificationManager)
+                    ms.getSystemService(Context.NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(nc);
         }
 
         userNoteBuilder = new NotificationCompat.Builder(ms, CTFWS_GAME_CHANNEL_ID)
