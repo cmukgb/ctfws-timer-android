@@ -356,8 +356,9 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         Resources rs = mAct.getResources();
 
         if (gs.getFlagsVisible()) {
+            NumberFormat nf = NumberFormat.getIntegerInstance();
             h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.flags_viz_fmt,
-                    gs.getFlagsRed(), gs.getFlagsYel());
+                    nf.format(gs.getFlagsRed()), nf.format(gs.getFlagsYel()));
         } else {
             h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.flags_noviz);
         }

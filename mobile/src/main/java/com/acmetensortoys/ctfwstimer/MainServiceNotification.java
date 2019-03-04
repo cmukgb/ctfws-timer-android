@@ -139,9 +139,10 @@ class MainServiceNotification {
                             || (game.getFlagsRed() + game.getFlagsYel() > 0))) {
                     notifyUserSomehow(NotificationSource.FLAG);
                     lastContextTextSource = LastContentTextSource.FLAG;
+                    NumberFormat nf = NumberFormat.getIntegerInstance();
                     userNoteBuilder.setContentText(
                             String.format(mService.getResources().getString(R.string.notify_flags),
-                                    game.getFlagsRed(), game.getFlagsYel()));
+                                    nf.format(game.getFlagsRed()), nf.format(game.getFlagsYel())));
                     refreshNotification();
                 }
             }
