@@ -179,6 +179,10 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         doSetGameStateLabelText(gs, null);
         doSetSidesText(gs);
         doSetFlagsLabel(gs);
+        if (!gs.isConfigured()) {
+            doReset();
+            // otherwise there's a onCtFwSNow headed our way momentarily.
+        }
         onCtFwSFlags(gs);   /* Populate the flags field to some default */
     }
 
