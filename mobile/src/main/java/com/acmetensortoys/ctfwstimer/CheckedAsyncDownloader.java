@@ -19,27 +19,41 @@ import java.security.NoSuchAlgorithmException;
 
 public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL, Void, Void> {
 
-    public static final long ERR_UNTRIED     = -1; /* Not yet tried */
-    public static final long ERR_ALREADY     = -2; /* Existing file matches checksum */
-    public static final long ERR_WRITE       = -3; /* Local FS error */
-    public static final long ERR_HOSTUNREACH = -4; /* Could not establish connection */
-    public static final long ERR_XFER        = -5; /* Error during transfer */
-    public static final long ERR_CHECKSUM    = -6; /* Checksum did not match after xfer */
-    public static final long ERR_TOO_LONG    = -7; /* File longer than maximum permitted */
+    public enum Result {
+        RES_OK,
+        RES_UNTRIED,     /* Not yet tried */
+        RES_ALREADY,     /* Existing file matches checksum */
+        ERR_WRITE,       /* Local FS error */
+        ERR_HOSTUNREACH, /* Could not establish connection */
+        ERR_XFER,        /* Error during transfer */
+        ERR_CHECKSUM,    /* Checksum did not match after xfer */
+        ERR_TOO_LONG,    /* File longer than maximum permitted */
+    }
 
     public static class DL {
         final URL url;
         final byte[] sha256;
         final File dest;
         final long lengthLimit; /* In bytes, or 0 for no limit */
-        long result;
+        Result result;
+        long dlsize;
 
         public DL(URL url, byte[] sha256, long lim, File dest) {
             this.url = url;
             this.sha256 = sha256;
             this.dest = dest;
             this.lengthLimit = lim;
-            this.result = ERR_UNTRIED;
+            this.result = Result.RES_UNTRIED;
+            this.dlsize = 0;
+        }
+
+        public DL(DL dl) {
+            this.url = dl.url;
+            this.sha256 = dl.sha256;
+            this.dest = dl.dest;
+            this.lengthLimit = dl.lengthLimit;
+            this.result = dl.result;
+            this.dlsize = dl.dlsize;
         }
     }
 
@@ -64,7 +78,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 while (is.read(data) != -1) { ; }
 
                 if (java.util.Arrays.equals(is.getMessageDigest().digest(), dl.sha256)) {
-                    dl.result = ERR_ALREADY;
+                    dl.result = Result.RES_ALREADY;
                     continue;
                 }
 
@@ -87,14 +101,14 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
             try {
                 oft = File.createTempFile(dl.dest.getName(), "dl");
             } catch (IOException ioe) {
-                dl.result = ERR_WRITE;
+                dl.result = Result.ERR_WRITE;
                 continue;
             }
 
             try {
                 os = new FileOutputStream(oft);
             } catch (IOException ioe) {
-                dl.result = ERR_WRITE;
+                dl.result = Result.ERR_WRITE;
                 oft.delete();
                 continue;
             }
@@ -107,7 +121,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                         md
                     );
             } catch (IOException ioe) {
-                dl.result = ERR_HOSTUNREACH;
+                dl.result = Result.ERR_HOSTUNREACH;
                 oft.delete();
                 continue;
             }
@@ -123,7 +137,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                     if (dl.lengthLimit > 0 && xfer > dl.lengthLimit) {
                         is.close();
                         os.close();
-                        dl.result = ERR_TOO_LONG;
+                        dl.result = Result.ERR_TOO_LONG;
                         oft.delete();
                         continue dlfor;
                     }
@@ -132,24 +146,25 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 is.close();
                 os.close();
             } catch (IOException ioe) {
-                dl.result = ERR_XFER;
+                dl.result = Result.ERR_XFER;
                 oft.delete();
                 continue;
             }
 
             if (!java.util.Arrays.equals(is.getMessageDigest().digest(), dl.sha256)) {
-                dl.result = ERR_CHECKSUM;
+                dl.result = Result.ERR_CHECKSUM;
                 oft.delete();
                 continue;
             }
 
             if (!oft.renameTo(dl.dest)) {
-                dl.result = ERR_WRITE;
+                dl.result = Result.ERR_WRITE;
                 oft.delete();
                 continue;
             }
 
-            dl.result = xfer;
+            dl.result = Result.RES_OK;
+            dl.dlsize = xfer;
         }
 
         return null;

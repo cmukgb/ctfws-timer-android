@@ -38,7 +38,6 @@ public class HandbookDownloader implements IMqttMessageListener {
     /* non-null if download is in progress; access synchronized on this */
     private CheckedAsyncDownloader downloader;
     private CheckedAsyncDownloader.DL download;
-    private byte[] lastFetchedChecksum;
 
     /*
      * Alright, fetch time.  We're going to unsubscribe for the duration of the
@@ -105,24 +104,20 @@ public class HandbookDownloader implements IMqttMessageListener {
             }
 
             HandbookDownloader.this.downloader = null;
-            HandbookDownloader.this.download = null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            long result;
+            Result result;
             synchronized (HandbookDownloader.this) {
                 DL dl = HandbookDownloader.this.download;
                 result = dl.result;
-                if ((result >= 0) || (result == ERR_ALREADY)) {
-                    HandbookDownloader.this.lastFetchedChecksum = dl.sha256;
-                }
                 fini();
             }
             Log.d(TAG, "Post Ex: " + result);
-            if (result >= 0) {
+            if (result == Result.RES_OK) {
                 /* If we downloaded something new, go run the callback chain */
                 HandbookDownloader.this.mDLFiniCB.run();
             }
@@ -172,8 +167,10 @@ public class HandbookDownloader implements IMqttMessageListener {
                                + (Character.digit(checksum_str.charAt(2*i+1),16)));
         }
         synchronized (this) {
-            if (lastFetchedChecksum != null
-                    && java.util.Arrays.equals(checksum, lastFetchedChecksum)) {
+            if (download != null
+                    && (download.result == CheckedAsyncDownloader.Result.RES_OK
+                        || download.result == CheckedAsyncDownloader.Result.RES_ALREADY)
+                    && java.util.Arrays.equals(checksum, download.sha256)) {
                 /* Nothing to do */
                 Log.d(TAG, "Checksum matches last fetch");
                 return;
