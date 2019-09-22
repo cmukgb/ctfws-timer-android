@@ -64,6 +64,20 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:id="@+id/about_licenses" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/about_tab_debug"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/about_debug_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
                 </LinearLayout>
 
             </FrameLayout>

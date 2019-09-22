@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/about_menu_crono"
+        android:title="@string/ctfws_chrono_menutext"
+        app:actionViewClass="android.widget.Chronometer"
+        app:showAsAction="always" />
+
+</menu>

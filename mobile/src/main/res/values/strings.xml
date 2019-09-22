@@ -72,6 +72,10 @@
     <string name="wait_long">Stun 60</string>
     <string name="wait_short">Stun 10</string>
 
+    <string name="about_title">CtFwS Timer Info</string>
+    <string name="about_tab_program">Program</string>
+    <string name="about_tab_license">License</string>
+    <string name="about_tab_debug">Debug</string>
     <string name="about_imagealt">The CMUKGB Shield Logo</string>
     <string name="about_text"><![CDATA[
         <center>
