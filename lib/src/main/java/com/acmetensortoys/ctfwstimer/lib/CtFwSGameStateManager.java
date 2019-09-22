@@ -56,6 +56,7 @@ public class CtFwSGameStateManager {
         }
     }
     private Game curstate = new Game();
+    private String lastConfigMessage; // for debugging
 
     public synchronized void fromMqttConfigMessage(String st) {
         Game g = new Game();
@@ -87,11 +88,13 @@ public class CtFwSGameStateManager {
                 break;
             }
         }
+        lastConfigMessage = tm;
         if (!curstate.equals(g)) {
             curstate = g;
             notifyConfigEtAl();
         }
     }
+    public String getLastConfigMessage() { return lastConfigMessage; }
     public synchronized String toMqttConfigMessage() {
         if (!curstate.configured) {
             return "none";
