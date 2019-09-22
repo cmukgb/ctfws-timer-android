@@ -8,6 +8,14 @@
     <string name="ctfws_gamestart">Game\nStart</string>
     <string name="ctfws_jailbreak">Jailbreak\n%1$d of %2$d</string>
 
+    <string name="ctfws_chrono_future">Pending</string>
+    <string name="ctfws_chrono_gameend">Ending\n%s</string>
+    <string name="ctfws_chrono_gamestart">Setup\n%s</string>
+    <string name="ctfws_chrono_jailbreak">JB %1$d:\n%%s</string>
+    <string name="ctfws_chrono_menutext">Game Timer</string>
+    <string name="ctfws_chrono_nogame">No Game</string>
+    <string name="ctfws_chrono_over">Over!</string>
+
     <string name="ctfws_sides_wd">
         <![CDATA[<b><font color=#a94442>Red</font></b> is defending Wean; <b><font color=#8a6d3b>Yellow</font></b> is defending Doherty.]]>
     </string>
