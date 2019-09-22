@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -232,6 +233,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mainmenu_hand:
                 startActivity(new Intent(this, HandbookActivity.class));
                 return true;
+            case R.id.mainmenu_screenwake:
+                boolean checked = mi.isChecked();
+                if (checked) {
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                } else {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+                mi.setChecked(!checked);
             case R.id.mainmenu_reconn:
                 if (mSrvBinder != null) {
                     mSrvBinder.connect(true);

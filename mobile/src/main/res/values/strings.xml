@@ -52,6 +52,7 @@
     <string name="menutext_prf">Settings</string>
     <string name="menutext_quit">Quit</string>
     <string name="menutext_reconn">Reconnect</string>
+    <string name="menutext_screenwake">Keep Screen On</string>
     <string name="menutext_search">Search</string>
 
     <string name="mqtt_uri_label">Server URI:</string>
