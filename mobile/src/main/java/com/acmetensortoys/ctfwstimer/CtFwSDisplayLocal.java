@@ -18,8 +18,7 @@ import android.widget.TextView;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.text.NumberFormat;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.SortedSet;
 
 import static android.view.View.INVISIBLE;
 
@@ -374,7 +373,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
     }
 
     @Override
-    public void onCtFwSMessage(CtFwSGameStateManager gs, List<CtFwSGameStateManager.Msg> msgs) {
+    public void onCtFwSMessage(CtFwSGameStateManager gs, SortedSet<CtFwSGameStateManager.Msg> msgs) {
         final TextView msgstv = mAct.findViewById(R.id.msgs);
         int s = msgs.size();
 
@@ -389,10 +388,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         }
 
         final StringBuffer sb = new StringBuffer();
-        for (ListIterator<CtFwSGameStateManager.Msg> news = msgs.listIterator(0);
-                news.hasNext(); ) {
-
-            CtFwSGameStateManager.Msg m = news.next();
+        for (CtFwSGameStateManager.Msg m : msgs) {
 
             long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;
 

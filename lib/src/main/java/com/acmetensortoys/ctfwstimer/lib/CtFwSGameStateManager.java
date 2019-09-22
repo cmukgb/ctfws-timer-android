@@ -1,6 +1,5 @@
 package com.acmetensortoys.ctfwstimer.lib;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -8,6 +7,8 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class CtFwSGameStateManager {
 
@@ -262,7 +263,7 @@ public class CtFwSGameStateManager {
             return 0 == this.compareTo((Msg)o);
         }
     }
-    private final List<Msg> msgs = new ArrayList<>();
+    private SortedSet<Msg> msgs = new TreeSet<>();
     private long lastMsgTimestamp;
     public void onNewMessage(String str) {
         Msg m = null;
@@ -288,8 +289,7 @@ public class CtFwSGameStateManager {
             // XXX this is bogus
             if (isMessageTimeWithin(t) && (lastMsgTimestamp <= t)) {
                 lastMsgTimestamp = t;
-                if (!msgs.contains(m)) {
-                    msgs.add(m);
+                if (msgs.add(m)) {
                     notifyMessages();
                 }
             }
@@ -297,13 +297,8 @@ public class CtFwSGameStateManager {
     }
     public void onMessageReset(long before) {
         synchronized(this) {
-            while(!msgs.isEmpty()) {
-                Msg m = msgs.get(0);
-                if (m.when <= before) {
-                    msgs.remove(0);
-                } else {
-                    break;
-                }
+            if (!msgs.isEmpty() && msgs.first().when <= before) {
+                msgs = msgs.tailSet(new Msg(before, ""));
             }
             notifyMessages();
         }
@@ -325,7 +320,7 @@ public class CtFwSGameStateManager {
         // (or since the last), even though usually one only cares about the most recent
         // entry on the list.  We reserve the right to trim this list in the future, but
         // at the moment we do not.  Callees should not alter the list in any way.
-        void onCtFwSMessage(CtFwSGameStateManager game, List<Msg> msgs);
+        void onCtFwSMessage(CtFwSGameStateManager game, SortedSet<Msg> msgs);
     }
     final private Set<Observer> mObsvs = new HashSet<>();
     private synchronized void notifyFlags() {

@@ -21,6 +21,7 @@ import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.SortedSet;
 
 class MainServiceNotification {
     final public String CTFWS_GAME_CHANNEL_ID = "GAME";
@@ -151,14 +152,14 @@ class MainServiceNotification {
             private int lastMsgIx = 0;
 
             @Override
-            public void onCtFwSMessage(CtFwSGameStateManager game, List<CtFwSGameStateManager.Msg> msgs) {
+            public void onCtFwSMessage(CtFwSGameStateManager game, SortedSet<CtFwSGameStateManager.Msg> msgs) {
                 // Only do anything if we have added something to the list since last we looked
                 // and if it's in (or after) the current game.
                 // Always update the length in case this is a reset to zero.
                 int s = msgs.size();
                 Log.d("CtFwSNotify", "on msg s=" + s + " lastix=" + lastMsgIx);
                 if (s > lastMsgIx) {
-                    CtFwSGameStateManager.Msg m = msgs.get(s-1);
+                    CtFwSGameStateManager.Msg m = msgs.last();
                     Log.d("CtFwsNotify", "msg gst=" + game.getStartT() + " when=" + m.when);
                     if (game.isConfigured() && m.when >= game.getStartT()) {
                         notifyUserSomehow(NotificationSource.MESG);
