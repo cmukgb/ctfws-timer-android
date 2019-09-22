@@ -272,17 +272,12 @@ public class CtFwSGameStateManager {
 
         try {
             t = s.nextLong();
-        } catch (NoSuchElementException nse) {
-            // Maybe they forgot a time stamp?  Fake one up, a second ago or so,
-            // to allow for some clock drift and another message with a timestamp.
-            synchronized (this) {
-                m = new Msg(mT.wallMS() - 1000, str);
-            }
-        }
-
-        if (m == null) {
             s.useDelimiter("\\z");
             m = new Msg(t, s.next().trim());
+        } catch (NoSuchElementException nse) {
+            // malformed message; shouldn't be a problem these days (while we used to
+            // make up a timestamp for the entire string as the message, our tooling
+            // always sends with timestamps now).
         }
 
         synchronized (this) {
