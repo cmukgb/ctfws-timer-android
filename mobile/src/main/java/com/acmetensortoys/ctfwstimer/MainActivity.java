@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
     private MainService.LocalBinder mSrvBinder; // set once connection completed
+    private MainService.MqttServerEvent mLastMSE;
     private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
         public void onMqttServerChanged(MainService.LocalBinder b, final String sURL) {
@@ -43,9 +44,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onMqttServerEvent(MainService.LocalBinder b, MainService.MqttServerEvent mse) {
+            mLastMSE = mse;
+            if (mMenuReconn != null) {
+                setMenuReconnVis(mse);
+            }
             switch(mse) {
-                case MSE_CONN: setServerStateText(R.string.mqtt_conn); break;
-                case MSE_DISCONN: setServerStateText(R.string.mqtt_disconn); break;
+                case MSE_CONN:
+                    setServerStateText(R.string.mqtt_conn);
+                    break;
+                case MSE_DISCONN:
+                    setServerStateText(R.string.mqtt_disconn);
+                    break;
                 case MSE_SUB: {
                     long lstde = b.getLastServerTimeDeltaEstimate();
                     if (Math.abs(lstde) <= 5) {
@@ -62,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
             ;
         }
     };
+
+    private MenuItem mMenuReconn;
 
     private CtFwSDisplayLocal mCdl; // set in onStart
     private TextView mTvSU; // set in onStart
@@ -122,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mSrvBinder = null;
+            mLastMSE = MainService.MqttServerEvent.MSE_DISCONN; /* sort of, anyway */
         }
     };
 
@@ -217,21 +229,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
         switch(mi.getItemId()) {
-            case R.id.menu_hand:
+            case R.id.mainmenu_hand:
                 startActivity(new Intent(this, HandbookActivity.class));
                 return true;
-            case R.id.menu_reconn:
+            case R.id.mainmenu_reconn:
                 if (mSrvBinder != null) {
                     mSrvBinder.connect(true);
                 }
                 return true;
-            case R.id.menu_prf :
+            case R.id.mainmenu_prf :
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
-            case R.id.menu_about :
+            case R.id.mainmenu_about :
                 startActivity(new Intent(this, AboutActivity.class));
                 return true;
-            case R.id.menu_quit:
+            case R.id.mainmenu_quit:
                 if (mSrvBinder != null) {
                     mSrvBinder.exit();
                 }
@@ -247,6 +259,24 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater mi = getMenuInflater();
         mi.inflate(R.menu.mainmenu, menu);
+
+        mMenuReconn = menu.findItem(R.id.mainmenu_reconn);
+        if (mLastMSE != null) {
+            setMenuReconnVis(mLastMSE);
+        }
+
         return true;
+    }
+
+    private void setMenuReconnVis(MainService.MqttServerEvent mse) {
+        switch(mse) {
+            case MSE_CONN:
+            case MSE_SUB:
+                mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                break;
+            case MSE_DISCONN:
+                mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                break;
+        }
     }
 }

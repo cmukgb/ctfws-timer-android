@@ -4,37 +4,37 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu_hand"
-        android:icon="@android:drawable/ic_menu_directions"
+        android:id="@+id/mainmenu_hand"
+        android:icon="@drawable/ic_library_books_24dp"
         android:title="@string/menutext_handbook"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/menu_reconn"
-        android:checkable="false"
-        android:enabled="true"
-        android:icon="@android:drawable/stat_sys_download"
-        android:title="@string/menutext_reconn"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/menu_prf"
+        android:id="@+id/mainmenu_prf"
         android:checkable="false"
         android:enabled="true"
         android:icon="@android:drawable/ic_menu_manage"
         android:title="@string/menutext_prf"
+        android:visible="true" />
+    <item
+        android:id="@+id/mainmenu_reconn"
+        android:checkable="false"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:title="@string/menutext_reconn"
         android:visible="true"
         app:showAsAction="never" />
     <item
-        android:id="@+id/menu_about"
+        android:id="@+id/mainmenu_about"
         android:checkable="false"
         android:enabled="true"
         android:icon="@android:drawable/ic_menu_help"
         android:title="@string/menutext_about"
         android:visible="true" />
     <item
-        android:id="@+id/menu_quit"
+        android:id="@+id/mainmenu_quit"
         android:enabled="true"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
         android:title="@string/menutext_quit"
         android:visible="true" />
 </menu>
