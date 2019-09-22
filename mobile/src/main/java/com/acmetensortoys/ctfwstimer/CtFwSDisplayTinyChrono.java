@@ -6,8 +6,6 @@ import android.widget.Chronometer;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
-import java.util.List;
-import java.util.Locale;
 import java.util.SortedSet;
 
 /*

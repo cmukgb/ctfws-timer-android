@@ -5,11 +5,8 @@ import android.os.Handler;
 import android.support.v4.util.Consumer;
 import android.util.Log;
 
-import com.acmetensortoys.ctfwstimer.CheckedAsyncDownloader;
-
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
@@ -20,14 +17,14 @@ import java.util.Scanner;
 
 public class HandbookDownloader implements IMqttMessageListener {
 
-    private static String TAG = "HandbookDownloader";
+    private static final String TAG = "HandbookDownloader";
 
     private static final long HAND_MAX_LEN = 1024*1024; /* 1 MiB */
 
     private final Context mCtx;
     private final Consumer<CheckedAsyncDownloader.DL> mDLFiniCB;
     private IMqttAsyncClient mMqc;
-    private Handler mHdl;
+    private final Handler mHdl;
     private Runnable nextSubRunnable;
 
     public HandbookDownloader(Context ctx, Handler hdl,

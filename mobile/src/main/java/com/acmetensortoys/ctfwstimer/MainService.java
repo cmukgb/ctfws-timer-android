@@ -62,7 +62,7 @@ public class MainService extends Service {
 
     // Handbook fetch logic; this is a singleton for the service, even as connections come and go.
     private CheckedAsyncDownloader.DL lastHandDL;
-    private HandbookDownloader mHandDL = new HandbookDownloader(this,
+    private final HandbookDownloader mHandDL = new HandbookDownloader(this,
             new Handler(Looper.getMainLooper()),
             new Consumer<CheckedAsyncDownloader.DL>() {
                 @Override

@@ -20,7 +20,6 @@ import android.util.Log;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.SortedSet;
 
 class MainServiceNotification {
@@ -105,8 +104,6 @@ class MainServiceNotification {
                     String txt;
                     switch(now.rationale) {
                         default:
-                        case NR_GAME_IN_PROGRESS:
-                        case NR_START_FUTURE:
                             txt = "";
                             break;
                         case NR_TIME_UP:

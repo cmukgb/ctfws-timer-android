@@ -1,6 +1,5 @@
 package com.acmetensortoys.ctfwstimer;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import java.io.BufferedInputStream;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.NoSuchFileException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -75,6 +73,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
 
                 byte[] data = new byte[4096];
 
+                //noinspection StatementWithEmptyBody
                 while (is.read(data) != -1) { ; }
 
                 if (java.util.Arrays.equals(is.getMessageDigest().digest(), dl.sha256)) {
@@ -90,6 +89,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                  * Something has gone really wrong.
                  * Unlink the file and try to fetch it
                  */
+                //noinspection ResultOfMethodCallIgnored
                 dl.dest.delete();
             }
 
@@ -109,6 +109,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 os = new FileOutputStream(oft);
             } catch (IOException ioe) {
                 dl.result = Result.ERR_WRITE;
+                //noinspection ResultOfMethodCallIgnored
                 oft.delete();
                 continue;
             }
@@ -122,6 +123,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                     );
             } catch (IOException ioe) {
                 dl.result = Result.ERR_HOSTUNREACH;
+                //noinspection ResultOfMethodCallIgnored
                 oft.delete();
                 continue;
             }
@@ -138,6 +140,7 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                         is.close();
                         os.close();
                         dl.result = Result.ERR_TOO_LONG;
+                        //noinspection ResultOfMethodCallIgnored
                         oft.delete();
                         continue dlfor;
                     }
@@ -147,18 +150,21 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 os.close();
             } catch (IOException ioe) {
                 dl.result = Result.ERR_XFER;
+                //noinspection ResultOfMethodCallIgnored
                 oft.delete();
                 continue;
             }
 
             if (!java.util.Arrays.equals(is.getMessageDigest().digest(), dl.sha256)) {
                 dl.result = Result.ERR_CHECKSUM;
+                //noinspection ResultOfMethodCallIgnored
                 oft.delete();
                 continue;
             }
 
             if (!oft.renameTo(dl.dest)) {
                 dl.result = Result.ERR_WRITE;
+                //noinspection ResultOfMethodCallIgnored
                 oft.delete();
                 continue;
             }

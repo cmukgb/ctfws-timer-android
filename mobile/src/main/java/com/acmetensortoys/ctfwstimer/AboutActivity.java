@@ -40,7 +40,7 @@ public class AboutActivity extends AppCompatActivity {
     private TextView mTvDebug;
 
     private void makeDebugText() {
-        final StringBuffer sb = new StringBuffer("");
+        final StringBuffer sb = new StringBuffer();
 
         sb.append("Android host version: ");
         sb.append(Build.VERSION.RELEASE);
@@ -93,7 +93,7 @@ public class AboutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
-        mTvDebug = (TextView) findViewById(R.id.about_debug_tv);
+        mTvDebug = findViewById(R.id.about_debug_tv);
         makeDebugText();
 
         ActionBar ab = getSupportActionBar();
@@ -115,17 +115,17 @@ public class AboutActivity extends AppCompatActivity {
         });
 
         {
-            final WebView wv = (WebView) findViewById(R.id.about_text);
+            final WebView wv = findViewById(R.id.about_text);
             wv.loadData(getResources().getString(R.string.about_text),
                     "text/html", null);
         }
 
         {
-            final WebView wv = (WebView) findViewById(R.id.about_licenses);
+            final WebView wv = findViewById(R.id.about_licenses);
             wv.loadUrl("file:///android_asset/licenses.html");
         }
 
-        TabHost th = (TabHost) findViewById(R.id.about_tab_host);
+        TabHost th = findViewById(R.id.about_tab_host);
         th.setup();
 
         th.addTab(th.newTabSpec(TAB_PROG)
@@ -154,7 +154,7 @@ public class AboutActivity extends AppCompatActivity {
         return true;
     }
 
-    private MainService.Observer mSrvObs = new MainService.Observer() {
+    private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
         public void onMqttServerChanged(MainService.LocalBinder b, String sURL) {
 
@@ -172,7 +172,7 @@ public class AboutActivity extends AppCompatActivity {
         }
     };
 
-    private CtFwSGameStateManager.Observer mCtFwSObs = new CtFwSGameStateManager.Observer() {
+    private final CtFwSGameStateManager.Observer mCtFwSObs = new CtFwSGameStateManager.Observer() {
         @Override
         public void onCtFwSConfigure(CtFwSGameStateManager game) {
             makeDebugText();

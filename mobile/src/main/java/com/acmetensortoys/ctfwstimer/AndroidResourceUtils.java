@@ -10,6 +10,7 @@ public class AndroidResourceUtils {
         if (Build.VERSION.SDK_INT >= 24) {
             return Html.fromHtml(String.format(rs.getString(id), args), 0);
         } else {
+            //noinspection deprecation
             return Html.fromHtml(String.format(rs.getString(id), args));
         }
     }

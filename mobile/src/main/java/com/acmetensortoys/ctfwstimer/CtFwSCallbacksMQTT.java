@@ -20,7 +20,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onConfig = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             String tm = message.toString().trim();
             Log.d("CtFwS", "Message(Config): " + tm);
             mCgs.fromMqttConfigMessage(tm);
@@ -29,7 +29,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onEnd = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             Log.d("CtFwS", "Message(End): " + message);
             long endT;
             try {
@@ -43,7 +43,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onFlags = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             String tm = message.toString().trim();
             Log.d("CtFwS", "Message(Flags): " + tm);
             mCgs.fromMqttFlagsMessage(tm);
@@ -52,7 +52,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onMessage = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             String str = message.toString();
             Log.d("CtFwS", "Message(Broadcast): " + str);
             mCgs.onNewMessage(str);
@@ -61,7 +61,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onPlayerMessage = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             String str = message.toString();
             Log.d("CtFwS", "Message(Players): " + str);
             mCgs.onNewMessage(str);
@@ -70,7 +70,7 @@ class CtFwSCallbacksMQTT {
 
     final IMqttMessageListener onMessageReset = new IMqttMessageListener() {
         @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
+        public void messageArrived(String topic, MqttMessage message) {
             String str = message.toString();
             Log.d("CtFwS", "Message(Reset): " + str);
             long before;

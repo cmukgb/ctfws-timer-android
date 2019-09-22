@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.text.Html;
 import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -27,7 +26,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
     final private Activity mAct;
     String gameStateLabelText;
 
-    private StunTimer stun_short, stun_long;
+    private final StunTimer stun_short, stun_long;
 
     CtFwSDisplayLocal(Activity a) {
         mAct = a;
@@ -103,8 +102,6 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
                         sfx = rs.getString(R.string.notify_game_afoot);
                     }
                     break;
-                case NR_NOT_CONFIG:
-                    // Handled above; fallthru to placate static analysers
                 default:
                     sfx = "";
             }
@@ -394,6 +391,7 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         final StringBuffer sb = new StringBuffer();
         for (CtFwSGameStateManager.Msg m : msgs) {
 
+            //noinspection StatementWithEmptyBody
             if (m.when == 0 || !gs.isConfigured()) {
                 // leave out the time stamp
             } else if (m.when <= gs.getFirstRoundStartT()) {
