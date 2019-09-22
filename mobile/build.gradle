@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// See stackoverflow.com/questions/28498688
+def makeGitDescription = {
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--always'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -16,12 +26,14 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "gitDescription", "\"${makeGitDescription()}\""
         }
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             // Cam: testing on hardware, whee
             debuggable true
+            buildConfigField "String", "gitDescription", "\"${makeGitDescription()}\""
         }
     }
 
