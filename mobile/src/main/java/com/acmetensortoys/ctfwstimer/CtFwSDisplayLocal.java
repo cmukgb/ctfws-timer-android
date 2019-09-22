@@ -394,10 +394,18 @@ class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
         final StringBuffer sb = new StringBuffer();
         for (CtFwSGameStateManager.Msg m : msgs) {
 
-            long td = (m.when == 0) ? 0 : (gs.isConfigured()) ? m.when - gs.getStartT() : 0;
+            if (m.when == 0 || !gs.isConfigured()) {
+                // leave out the time stamp
+            } else if (m.when <= gs.getFirstRoundStartT()) {
+                sb.append("Setup+");
+                sb.append(DateUtils.formatElapsedTime(m.when - gs.getStartT()));
+                sb.append(": ");
+            } else {
+                sb.append("Game+");
+                sb.append(DateUtils.formatElapsedTime(m.when - gs.getFirstRoundStartT()));
+                sb.append(": ");
+            }
 
-            sb.append(DateUtils.formatElapsedTime(td));
-            sb.append(": ");
             sb.append(m.msg);
             sb.append("\n");
         }
