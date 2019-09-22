@@ -100,9 +100,10 @@ public class CtFwSGameStateManager {
             return "none";
         }
 
-        return String.format(Locale.ROOT, "%d %d %d %d %d",
+        return String.format(Locale.ROOT, "%d %d %d %d %d %d %s",
                 curstate.startT, curstate.setupD, curstate.rounds,
-                curstate.roundD, curstate.flagsTotal);
+                curstate.roundD, curstate.flagsTotal, curstate.gameIx,
+                curstate.sides_str);
     }
     public synchronized void deconfigure() {
         curstate.configured = false;
