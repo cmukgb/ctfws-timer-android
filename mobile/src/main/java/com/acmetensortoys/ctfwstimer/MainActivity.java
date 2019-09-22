@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onHandbookFetch(MainService.LocalBinder b) {
+        public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
             ;
         }
     };

@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Consumer;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
@@ -60,12 +61,14 @@ public class MainService extends Service {
     public MainService() { }
 
     // Handbook fetch logic; this is a singleton for the service, even as connections come and go.
+    private CheckedAsyncDownloader.DL lastHandDL;
     private HandbookDownloader mHandDL = new HandbookDownloader(this,
             new Handler(Looper.getMainLooper()),
-            new Runnable() {
+            new Consumer<CheckedAsyncDownloader.DL>() {
                 @Override
-                public void run() {
-                    MainService.this.notifyHandbook();
+                public void accept(CheckedAsyncDownloader.DL dl) {
+                    lastHandDL = dl;
+                    MainService.this.notifyHandbook(dl);
                 }
             });
 
@@ -322,7 +325,7 @@ public class MainService extends Service {
     public interface Observer {
         void onMqttServerChanged(LocalBinder b, String sURL);
         void onMqttServerEvent(LocalBinder b, MqttServerEvent mse);
-        void onHandbookFetch(LocalBinder b);
+        void onHandbookFetch(LocalBinder b, CheckedAsyncDownloader.DL dl);
     }
     private final Set<Observer> mObsvs = new HashSet<>();
     private void notifyMSE() {
@@ -341,9 +344,9 @@ public class MainService extends Service {
             for (Observer o : mObsvs) { o.onMqttServerChanged(mBinder, sURL); }
         }
     }
-    private void notifyHandbook() {
+    private void notifyHandbook(CheckedAsyncDownloader.DL dl) {
         synchronized(this) {
-            for (Observer o : mObsvs) { o.onHandbookFetch(mBinder); }
+            for (Observer o : mObsvs) { o.onHandbookFetch(mBinder, dl); }
         }
     }
 
@@ -382,6 +385,7 @@ public class MainService extends Service {
                         o.onMqttServerChanged(mBinder, mMqc.getServerURI());
                     }
                     o.onMqttServerEvent(mBinder, mMSE);
+                    o.onHandbookFetch(mBinder, lastHandDL);
                 }
             }
         }

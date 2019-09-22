@@ -67,9 +67,14 @@ public class HandbookActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onHandbookFetch(MainService.LocalBinder b) {
+        public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
             display();
-            Toast.makeText(HandbookActivity.this, R.string.hand_new, Toast.LENGTH_SHORT).show();
+            if (dl.result == CheckedAsyncDownloader.Result.RES_OK) {
+                Toast.makeText(HandbookActivity.this,
+                                R.string.hand_new,
+                                Toast.LENGTH_SHORT)
+                     .show();
+            }
         }
     };
 

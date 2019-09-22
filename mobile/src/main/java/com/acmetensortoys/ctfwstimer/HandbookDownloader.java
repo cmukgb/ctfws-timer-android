@@ -2,6 +2,7 @@ package com.acmetensortoys.ctfwstimer;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.v4.util.Consumer;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.CheckedAsyncDownloader;
@@ -24,12 +25,13 @@ public class HandbookDownloader implements IMqttMessageListener {
     private static final long HAND_MAX_LEN = 1024*1024; /* 1 MiB */
 
     private final Context mCtx;
-    private final Runnable mDLFiniCB;
+    private final Consumer<CheckedAsyncDownloader.DL> mDLFiniCB;
     private IMqttAsyncClient mMqc;
     private Handler mHdl;
     private Runnable nextSubRunnable;
 
-    public HandbookDownloader(Context ctx, Handler hdl, Runnable dlfinicb) {
+    public HandbookDownloader(Context ctx, Handler hdl,
+                              Consumer<CheckedAsyncDownloader.DL> dlfinicb) {
         this.mCtx = ctx;
         this.mHdl = hdl;
         this.mDLFiniCB = dlfinicb;
@@ -110,17 +112,13 @@ public class HandbookDownloader implements IMqttMessageListener {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            Result result;
+            DL dl;
             synchronized (HandbookDownloader.this) {
-                DL dl = HandbookDownloader.this.download;
-                result = dl.result;
+                dl = HandbookDownloader.this.download;
                 fini();
             }
-            Log.d(TAG, "Post Ex: " + result);
-            if (result == Result.RES_OK) {
-                /* If we downloaded something new, go run the callback chain */
-                HandbookDownloader.this.mDLFiniCB.run();
-            }
+            Log.d(TAG, "Post Ex: " + dl.result);
+            HandbookDownloader.this.mDLFiniCB.accept(dl);
         }
 
         @Override
