@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
+import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
 
 import java.text.NumberFormat;
 import java.util.SortedSet;

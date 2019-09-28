@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.res.Resources;
 import android.os.Build;

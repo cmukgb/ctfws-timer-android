@@ -20,6 +20,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "CtFwS";
