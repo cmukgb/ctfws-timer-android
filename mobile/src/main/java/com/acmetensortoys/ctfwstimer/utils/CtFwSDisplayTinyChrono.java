@@ -1,9 +1,10 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.res.Resources;
 import android.os.SystemClock;
 import android.widget.Chronometer;
 
+import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.util.SortedSet;
@@ -13,7 +14,7 @@ import java.util.SortedSet;
  * in the headers.  This provides that for us.
  */
 
-class CtFwSDisplayTinyChrono implements CtFwSGameStateManager.Observer {
+public class CtFwSDisplayTinyChrono implements CtFwSGameStateManager.Observer {
 
     private final Chronometer mCh;
     private final Resources mRes;

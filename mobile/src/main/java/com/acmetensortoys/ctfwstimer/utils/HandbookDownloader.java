@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.support.v4.util.Consumer;
 import android.util.Log;
 
-import com.acmetensortoys.ctfwstimer.HandbookActivity;
+import com.acmetensortoys.ctfwstimer.activity.HandbookActivity;
 
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;

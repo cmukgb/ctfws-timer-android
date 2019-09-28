@@ -1,12 +1,6 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.activity;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,11 +11,14 @@ import android.widget.Chronometer;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.acmetensortoys.ctfwstimer.utils.CtFwSDisplayTinyChrono;
+import com.acmetensortoys.ctfwstimer.R;
+import com.acmetensortoys.ctfwstimer.service.MainService;
 import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
 
 import java.io.File;
 
-public class HandbookActivity extends AppCompatActivity {
+public class HandbookActivity extends CtFwSActivityBase {
 
     public static final String HAND_FILE_NAME = "handbook.html";
     private static final String TAG = "CtFwSHandbook";
@@ -54,7 +51,7 @@ public class HandbookActivity extends AppCompatActivity {
         @Override
         public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
             display();
-            if (dl.getResult() == CheckedAsyncDownloader.Result.RES_OK) {
+            if (dl != null && dl.getResult() == CheckedAsyncDownloader.Result.RES_OK) {
                 Toast.makeText(HandbookActivity.this,
                                 R.string.hand_new,
                                 Toast.LENGTH_SHORT)
@@ -63,28 +60,12 @@ public class HandbookActivity extends AppCompatActivity {
         }
     };
 
-    private MainService.LocalBinder mSrvBinder;
-
-    private void doRegisterObservers() {
+    protected void doRegisterObservers() {
         mSrvBinder.registerObserver(mSrvObs);
         if (mTitleChronoObs != null) {
             mSrvBinder.getGameState().registerObserver(mTitleChronoObs);
         }
     }
-
-    private final ServiceConnection ctfwssc = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mSrvBinder = (MainService.LocalBinder) service;
-            doRegisterObservers();
-            mSrvBinder.connect(false);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mSrvBinder = null;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,21 +153,12 @@ public class HandbookActivity extends AppCompatActivity {
     public void onStart() {
         Log.d(TAG, "onStart");
         super.onStart();
-
-        if (mSrvBinder == null) {
-            Intent si = new Intent(this, MainService.class);
-            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE | Context.BIND_ABOVE_CLIENT);
-        }
     }
 
     @Override
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-
-        if (mSrvBinder != null) {
-            doRegisterObservers();
-        }
     }
 
     @Override
@@ -203,8 +175,6 @@ public class HandbookActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
-        unbindService(ctfwssc);
-
         super.onDestroy();
     }
 }

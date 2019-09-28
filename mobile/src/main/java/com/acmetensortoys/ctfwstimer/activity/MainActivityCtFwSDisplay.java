@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.activity;
 
 import android.app.Activity;
 import android.content.res.Resources;
@@ -14,6 +14,7 @@ import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
 
@@ -23,13 +24,13 @@ import java.util.SortedSet;
 import static android.view.View.INVISIBLE;
 
 // TODO nwf is bad at UI design; someone who isn't him should improve this
-class CtFwSDisplayLocal implements CtFwSGameStateManager.Observer {
+class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
     final private Activity mAct;
     String gameStateLabelText;
 
     private final StunTimer stun_short, stun_long;
 
-    CtFwSDisplayLocal(Activity a) {
+    MainActivityCtFwSDisplay(Activity a) {
         mAct = a;
         gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
 

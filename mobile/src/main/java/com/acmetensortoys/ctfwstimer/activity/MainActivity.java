@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.activity;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,15 +20,18 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.acmetensortoys.ctfwstimer.BuildConfig;
+import com.acmetensortoys.ctfwstimer.R;
+import com.acmetensortoys.ctfwstimer.service.MainService;
 import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
+import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends CtFwSActivityBase {
 
     private static final String TAG = "CtFwS";
 
     private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
 
-    private MainService.LocalBinder mSrvBinder; // set once connection completed
     private MainService.MqttServerEvent mLastMSE;
     private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
@@ -77,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     private MenuItem mMenuReconn;
 
-    private CtFwSDisplayLocal mCdl; // set in onStart
+    private MainActivityCtFwSDisplay mCdl; // set in onStart
     private TextView mTvSU; // set in onStart
     private TextView mTvSS; // set in onStart
     private void setServerStateText(@StringRes final int resid, Object... args) {
@@ -120,35 +123,19 @@ public class MainActivity extends AppCompatActivity {
         mTvSU = findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = findViewById(R.id.tv_mqtt_state);
 
-        mCdl = new CtFwSDisplayLocal(this);
+        mCdl = new MainActivityCtFwSDisplay(this);
     }
 
-    private final ServiceConnection ctfwssc = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mSrvBinder = (MainService.LocalBinder) service;
-            mSrvBinder.getGameState().registerObserver(mCdl);
-            mSrvBinder.registerObserver(mSrvObs);
-            mabh.onStart(MainActivity.this, mSrvBinder);
-            mSrvBinder.connect(false);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mSrvBinder = null;
-            mLastMSE = MainService.MqttServerEvent.MSE_DISCONN; /* sort of, anyway */
-        }
-    };
+    protected void doRegisterObservers(){
+        mSrvBinder.getGameState().registerObserver(mCdl);
+        mSrvBinder.registerObserver(mSrvObs);
+        mabh.onRegisterObservers(MainActivity.this, mSrvBinder);
+    }
 
     @Override
     public void onStart() {
         Log.d(TAG, "onStart");
         super.onStart();
-
-        if (mSrvBinder == null) {
-            Intent si = new Intent(this, MainService.class);
-            bindService(si, ctfwssc, Context.BIND_AUTO_CREATE | Context.BIND_ABOVE_CLIENT);
-        }
     }
 
     @Override
@@ -196,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
-        unbindService(ctfwssc);
-
         super.onDestroy();
     }
 
@@ -234,6 +219,9 @@ public class MainActivity extends AppCompatActivity {
         switch(mi.getItemId()) {
             case R.id.mainmenu_hand:
                 startActivity(new Intent(this, HandbookActivity.class));
+                return true;
+            case R.id.mainmenu_judge:
+                startActivity(new Intent(this, JudgeActivity.class));
                 return true;
             case R.id.mainmenu_screenwake:
                 boolean checked = mi.isChecked();
