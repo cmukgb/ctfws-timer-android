@@ -1,9 +1,11 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.Context;
 import android.os.Handler;
 import android.support.v4.util.Consumer;
 import android.util.Log;
+
+import com.acmetensortoys.ctfwstimer.HandbookActivity;
 
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
@@ -114,7 +116,7 @@ public class HandbookDownloader implements IMqttMessageListener {
                 dl = HandbookDownloader.this.download;
                 fini();
             }
-            Log.d(TAG, "Post Ex: " + dl.result);
+            Log.d(TAG, "Post Ex: " + dl.getResult());
             HandbookDownloader.this.mDLFiniCB.accept(dl);
         }
 
@@ -162,13 +164,15 @@ public class HandbookDownloader implements IMqttMessageListener {
                                + (Character.digit(checksum_str.charAt(2*i+1),16)));
         }
         synchronized (this) {
-            if (download != null
-                    && (download.result == CheckedAsyncDownloader.Result.RES_OK
-                        || download.result == CheckedAsyncDownloader.Result.RES_ALREADY)
+            if (download != null) {
+                CheckedAsyncDownloader.Result dlr = download.getResult();
+                if ((dlr == CheckedAsyncDownloader.Result.RES_OK
+                        || dlr == CheckedAsyncDownloader.Result.RES_ALREADY)
                     && java.util.Arrays.equals(checksum, download.sha256)) {
-                /* Nothing to do */
-                Log.d(TAG, "Checksum matches last fetch");
-                return;
+                    /* Nothing to do */
+                    Log.d(TAG, "Checksum matches last fetch");
+                    return;
+                }
             }
 
             if (this.downloader != null) {

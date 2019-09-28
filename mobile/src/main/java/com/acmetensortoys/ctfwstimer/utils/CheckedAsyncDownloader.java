@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.utils;
 
 import android.os.AsyncTask;
 
@@ -29,12 +29,12 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
     }
 
     public static class DL {
-        final URL url;
-        final byte[] sha256;
-        final File dest;
-        final long lengthLimit; /* In bytes, or 0 for no limit */
-        Result result;
-        long dlsize;
+        public final URL url;
+        public final byte[] sha256;
+        public final File dest;
+        public final long lengthLimit; /* In bytes, or 0 for no limit */
+        private Result result;
+        private long dlsize;
 
         public DL(URL url, byte[] sha256, long lim, File dest) {
             this.url = url;
@@ -53,6 +53,9 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
             this.result = dl.result;
             this.dlsize = dl.dlsize;
         }
+
+        public Result getResult() { return result; }
+        public long getDlsize() { return dlsize ; }
     }
 
     @Override

@@ -17,6 +17,8 @@ import android.widget.Chronometer;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
+
 import java.io.File;
 
 public class HandbookActivity extends AppCompatActivity {
@@ -52,7 +54,7 @@ public class HandbookActivity extends AppCompatActivity {
         @Override
         public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
             display();
-            if (dl.result == CheckedAsyncDownloader.Result.RES_OK) {
+            if (dl.getResult() == CheckedAsyncDownloader.Result.RES_OK) {
                 Toast.makeText(HandbookActivity.this,
                                 R.string.hand_new,
                                 Toast.LENGTH_SHORT)

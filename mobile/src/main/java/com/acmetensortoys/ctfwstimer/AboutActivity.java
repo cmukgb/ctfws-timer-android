@@ -20,6 +20,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
+import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -57,7 +58,7 @@ public class AboutActivity extends AppCompatActivity {
         {
             if (lastDL != null) {
                 sb.append("Last fetched handbook:\n  result: ");
-                sb.append(lastDL.result);
+                sb.append(lastDL.getResult());
                 sb.append("\n  checksum: ");
                 for (byte b : Arrays.copyOfRange(lastDL.sha256, 0, 16)) {
                     sb.append(String.format(Locale.ROOT, "%02x", b));
