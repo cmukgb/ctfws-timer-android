@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.utils;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.acmetensortoys.ctfwstimer.R;
 
 public class DefaultableEditTextPreference extends EditTextPreference {
     // GAH!  Our parent Preference has this as a private field.  Grrr Android!
