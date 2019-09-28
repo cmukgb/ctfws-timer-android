@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.service;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -17,6 +17,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.acmetensortoys.ctfwstimer.activity.MainActivity;
+import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
 import java.text.NumberFormat;

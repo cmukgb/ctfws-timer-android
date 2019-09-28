@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.service;
 
 import android.util.Log;
 

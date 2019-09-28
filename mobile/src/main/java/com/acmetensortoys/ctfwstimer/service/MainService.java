@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 import com.acmetensortoys.ctfwstimer.lib.TimerProvider;
+import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
+import com.acmetensortoys.ctfwstimer.utils.HandbookDownloader;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.android.service.MqttTraceHandler;
@@ -359,15 +361,15 @@ public class MainService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        CtFwSGameStateManager getGameState() {
+        public CtFwSGameStateManager getGameState() {
             return mCgs;
         }
-        long getLastServerTimeDeltaEstimate() { return lastServerTimeDeltaEstimate; }
+        public long getLastServerTimeDeltaEstimate() { return lastServerTimeDeltaEstimate; }
 
         // It should not be necessary to call this except at the beginning or to force a reconnect;
         // most everything else you might want in a connect method is handled by the
         // OnSharedPreferenceChangeListener listener above.
-        void connect(boolean force) {
+        public void connect(boolean force) {
             if (force || mMSE != MqttServerEvent.MSE_SUB) {
                 SharedPreferences sp = PreferenceManager
                         .getDefaultSharedPreferences(MainService.this);
@@ -375,7 +377,7 @@ public class MainService extends Service {
                 doMqtt(sp.getString("server", null));
             }
         }
-        void registerObserver(Observer o) {
+        public void registerObserver(Observer o) {
             synchronized(MainService.this) {
                 if (mObsvs.add(o)) {
                     // Fire off synthetic deltas to bring the observer up to date.
@@ -389,10 +391,10 @@ public class MainService extends Service {
                 }
             }
         }
-        void unregisterObserver(Observer o) {
+        public void unregisterObserver(Observer o) {
             synchronized(MainService.this) { mObsvs.remove(o); }
         }
-        void exit() {
+        public void exit() {
             mMsn.ensureNoNotification(true);
         }
     }
@@ -401,6 +403,7 @@ public class MainService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d("Service", "onBind: " + intent);
+        mBinder.connect(false);
         return mBinder;
     }
 
