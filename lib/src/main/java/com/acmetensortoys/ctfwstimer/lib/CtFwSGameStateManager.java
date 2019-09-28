@@ -2,7 +2,6 @@ package com.acmetensortoys.ctfwstimer.lib;
 
 import java.util.HashSet;
 import java.util.InputMismatchException;
-import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Scanner;

@@ -87,8 +87,6 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             String sfx;
             switch (nr) {
                 case NR_EXPLICIT_END:
-                    sfx = rs.getString(R.string.notify_game_over);
-                    break;
                 case NR_TIME_UP:
                     sfx = rs.getString(R.string.notify_game_over);
                     break;

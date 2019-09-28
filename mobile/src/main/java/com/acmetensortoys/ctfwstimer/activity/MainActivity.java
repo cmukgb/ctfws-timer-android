@@ -1,15 +1,10 @@
 package com.acmetensortoys.ctfwstimer.activity;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.StringRes;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Spanned;
 import android.util.Log;

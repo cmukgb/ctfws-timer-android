@@ -144,7 +144,7 @@ public class AboutActivity extends CtFwSActivityBase {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.aboutmenu, menu);
 
-        Chronometer ch = (Chronometer) menu.findItem(R.id.about_menu_crono).getActionView();
+        Chronometer ch = (Chronometer) menu.findItem(R.id.about_menu_chrono).getActionView();
         mTitleChronoObs = new CtFwSDisplayTinyChrono(getResources(), ch);
         if (mSrvBinder != null) {
             doRegisterObservers();

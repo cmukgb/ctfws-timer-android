@@ -57,7 +57,7 @@ public class MainService extends Service {
         }
     });
 
-    @SuppressWarnings({"FieldCanBeLocal", "unused"})
+    @SuppressWarnings({"FieldCanBeLocal"})
     private MainServiceNotification mMsn; // set in onCreate
 
     public MainService() { }

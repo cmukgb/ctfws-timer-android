@@ -48,10 +48,16 @@ public class CtFwSDisplayTinyChrono implements CtFwSGameStateManager.Observer {
                 if (now.rationale != CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
                     int rid = R.string.ctfws_chrono_nogame;
                     switch(now.rationale) {
-                        case NR_TIME_UP:      rid = R.string.ctfws_chrono_over  ; break;
-                        case NR_EXPLICIT_END: rid = R.string.ctfws_chrono_over  ; break;
-                        case NR_START_FUTURE: rid = R.string.ctfws_chrono_future; break;
-                        case NR_NOT_CONFIG:   rid = R.string.ctfws_chrono_nogame; break;
+                        case NR_TIME_UP:
+                        case NR_EXPLICIT_END:
+                            rid = R.string.ctfws_chrono_over;
+                            break;
+                        case NR_START_FUTURE:
+                            rid = R.string.ctfws_chrono_future;
+                            break;
+                        case NR_NOT_CONFIG:
+                            rid = R.string.ctfws_chrono_nogame;
+                            break;
                     }
                     mCh.setText(rid);
                     return;

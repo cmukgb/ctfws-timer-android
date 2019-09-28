@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/hand_menu_crono"
+        android:id="@+id/hand_menu_chrono"
         android:title="@string/ctfws_chrono_menutext"
         app:actionViewClass="android.widget.Chronometer"
         app:showAsAction="always" />
