@@ -1,8 +1,10 @@
-package com.acmetensortoys.ctfwstimer;
+package com.acmetensortoys.ctfwstimer.activity;
 
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.os.Bundle;
+
+import com.acmetensortoys.ctfwstimer.R;
 
 public class SettingsActivity extends PreferenceActivity {
     @Override
