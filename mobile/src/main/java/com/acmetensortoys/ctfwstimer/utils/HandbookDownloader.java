@@ -13,6 +13,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -51,60 +52,56 @@ public class HandbookDownloader implements IMqttMessageListener {
      * Note that the CheckedAsyncDownloader also verifies the checksum of the file
      * present on disk, so at startup we might run one AsyncTask and then bail out.
      */
-    private class Task extends CheckedAsyncDownloader {
-        final IMqttAsyncClient mqc;
+    private static class Task extends CheckedAsyncDownloader {
+        final WeakReference<HandbookDownloader> mSelf;
 
-        public Task(IMqttAsyncClient mqc) {
-            this.mqc = mqc;
+        Task(HandbookDownloader mSelf) {
+            this.mSelf = new WeakReference<>(mSelf);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(TAG, "Pre-ex");
-            synchronized (HandbookDownloader.this) {
-                try {
-                    unsubscribe(mqc);
-                } catch (MqttException mqe) {
-                    /* No real harm in the matter */
-                    ;
-                }
-            }
         }
 
-        private void fini() {
+        private void fini(HandbookDownloader self) {
             /*
              * Try to resubscribe in a while.
              * This is a very crude kind of rate limiting.
              */
-            synchronized (this) {
-                if (nextSubRunnable != null) {
-                    mHdl.removeCallbacks(nextSubRunnable);
+            synchronized (self) {
+                if (self.nextSubRunnable != null) {
+                    self.mHdl.removeCallbacks(self.nextSubRunnable);
                 }
-                nextSubRunnable = new Runnable() {
+                self.nextSubRunnable = new Runnable() {
                     @Override
                     public void run() {
                         Log.d(TAG, "Resubscribing to handbook topic");
-                        synchronized (HandbookDownloader.this) {
-                            if (mqc == mMqc) {
-                                try {
-                                    subscribe(mqc);
-                                    nextSubRunnable = null;
-                                } catch (MqttException mqe) {
-                                    /*
-                                     * Well this stinks.  Presumably it is because
-                                     * something has gone wrong somewhere else and
-                                     * we will notice shortly.
-                                     */
-                                }
+
+                        HandbookDownloader self2 = mSelf.get();
+                        if (self2 == null) {
+                            return;
+                        }
+
+                        synchronized (self2) {
+                            try {
+                                self2.subscribe(self2.mMqc);
+                                self2.nextSubRunnable = null;
+                            } catch (MqttException mqe) {
+                                /*
+                                 * Well this stinks.  Presumably it is because
+                                 * something has gone wrong somewhere else and
+                                 * we will notice shortly.
+                                 */
                             }
                         }
                     }
                 };
-                mHdl.postDelayed(nextSubRunnable, 60000);
+                self.mHdl.postDelayed(self.nextSubRunnable, 60000);
             }
 
-            HandbookDownloader.this.downloader = null;
+            self.downloader = null;
         }
 
         @Override
@@ -112,20 +109,30 @@ public class HandbookDownloader implements IMqttMessageListener {
             super.onPostExecute(aVoid);
 
             DL dl;
-            synchronized (HandbookDownloader.this) {
-                dl = HandbookDownloader.this.download;
-                fini();
+            HandbookDownloader self = mSelf.get();
+            if (self == null) {
+                return;
+            }
+            synchronized (self) {
+                dl = self.download;
+                fini(self);
             }
             Log.d(TAG, "Post Ex: " + dl.getResult());
-            HandbookDownloader.this.mDLFiniCB.accept(dl);
+            self.mDLFiniCB.accept(dl);
         }
 
         @Override
         protected void onCancelled(Void aVoid) {
-            super.onCancelled(aVoid);
             Log.d(TAG, "Cancel");
-            synchronized (HandbookDownloader.this) {
-                fini();
+
+            super.onCancelled(aVoid);
+            HandbookDownloader self = mSelf.get();
+            if (self == null) {
+                return;
+            }
+            synchronized (self) {
+                fini(self);
+                mSelf.clear();
             }
         }
     }
@@ -180,7 +187,13 @@ public class HandbookDownloader implements IMqttMessageListener {
                 return;
             }
 
-            this.downloader = new Task(mMqc);
+            try {
+                unsubscribe(mMqc);
+            } catch (MqttException me) {
+                /* Well, that's kind of sad, but so it goes */
+            }
+
+            this.downloader = new Task(this);
             this.download = new CheckedAsyncDownloader.DL(new URL(url), checksum, HAND_MAX_LEN,
                     new File(mCtx.getFilesDir(), HandbookActivity.HAND_FILE_NAME));
             this.downloader.execute(this.download);
