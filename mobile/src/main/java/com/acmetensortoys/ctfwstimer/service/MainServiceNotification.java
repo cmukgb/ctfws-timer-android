@@ -271,7 +271,7 @@ class MainServiceNotification {
                 mService.bindService(new Intent(mService, MainService.class), userNoteSC,
                         Context.BIND_AUTO_CREATE);
             }
-            lastContextTextSource = LastContentTextSource.FLAG;
+            lastContextTextSource = LastContentTextSource.NONE;
             userNoteBuilder.setContentText(null);
             refreshNotification();
         }
