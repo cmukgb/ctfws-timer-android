@@ -260,6 +260,11 @@ public class MainActivity extends CtFwSActivityBase {
             setMenuReconnVis(mLastMSE);
         }
 
+
+        if (menu instanceof MenuBuilder) {
+            ((MenuBuilder)menu).setOptionalIconsVisible(true);
+        }
+
         return true;
     }
 
