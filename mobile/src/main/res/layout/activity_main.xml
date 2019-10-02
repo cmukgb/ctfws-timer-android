@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -11,9 +12,12 @@
     tools:context="com.acmetensortoys.ctfwstimer.activity.MainActivity">
 
     <LinearLayout
+        android:id="@+id/main_headers"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/header_gamestate"
@@ -191,6 +195,17 @@
 
         </TableLayout>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/main_connmeta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/main_headers">
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -200,21 +215,20 @@
         <TextView
             android:id="@+id/msgs"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:ems="10"
             android:gravity="bottom"
             android:inputType="none"
-            android:lines="10"
             android:scrollbars="vertical" />
-
     </LinearLayout>
 
     <TableLayout
-        android:id="@+id/connmeta"
+        android:id="@+id/main_connmeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:stretchColumns="1">
+        android:stretchColumns="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <TableRow
             android:layout_width="match_parent"
@@ -253,4 +267,4 @@
 
     </TableLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

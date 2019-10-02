@@ -92,7 +92,7 @@ public class MainActivity extends CtFwSActivityBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.connmeta).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.main_connmeta).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onclick_connmeta(v);
