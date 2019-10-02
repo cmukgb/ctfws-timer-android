@@ -2,7 +2,7 @@ package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.v4.util.Consumer;
+import androidx.core.util.Consumer;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.activity.HandbookActivity;

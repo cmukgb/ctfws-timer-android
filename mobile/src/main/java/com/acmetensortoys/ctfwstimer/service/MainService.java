@@ -8,8 +8,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
-import android.support.v4.util.Consumer;
+import androidx.annotation.Nullable;
+import androidx.core.util.Consumer;
 import android.util.Log;
 
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
