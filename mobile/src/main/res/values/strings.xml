@@ -45,7 +45,7 @@
     <string name="notify_game_over">Game over!</string>
     <string name="notify_not_config">Game not configured!</string>
     <string name="notify_flags" tools:ignore="PluralsCandidate">Flag captured! Red:%1$s Yellow:%2$s</string>
-    <string name="notify_jailbreak">Jailbreak %1$d of %2$d</string>
+    <string name="notify_jailbreak">Awaiting jailbreak %1$d of %2$d&#8230;</string>
 
     <string name="menutext_about">About</string>
     <string name="menutext_handbook">Handbook</string>
