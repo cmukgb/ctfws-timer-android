@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer.activity;
+package com.acmetensortoys.ctfwstimer.activity.main;
 
 import android.app.Activity;
 import android.content.res.Resources;
@@ -21,16 +21,14 @@ import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
 import java.text.NumberFormat;
 import java.util.SortedSet;
 
-import static android.view.View.INVISIBLE;
-
 // TODO nwf is bad at UI design; someone who isn't him should improve this
-class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
+public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
     final private Activity mAct;
     String gameStateLabelText;
 
     private final StunTimer stun_short, stun_long;
 
-    MainActivityCtFwSDisplay(Activity a) {
+    CtFwSDisplay(Activity a) {
         mAct = a;
         gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
 
@@ -226,6 +224,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             pb_jb.post(new Runnable() {
                 @Override
                 public void run() {
+                    pb_jb.setVisibility(View.VISIBLE);
                     pb_jb.setIndeterminate(false);
                     pb_jb.setMax((int) (now.roundEnd - now.roundStart));
                     pb_jb.setProgress(0);
@@ -262,6 +261,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             pb_gp.post(new Runnable() {
                 @Override
                 public void run() {
+                    pb_gp.setVisibility(View.VISIBLE);
                     pb_gp.setIndeterminate(false);
                     pb_gp.setMax(gs.getComputedGameDuration());
                     pb_gp.setProgress(0);
@@ -289,6 +289,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             pb_gp.post(new Runnable() {
                 @Override
                 public void run() {
+                    pb_gp.setVisibility(View.INVISIBLE);
                     pb_gp.setIndeterminate(true);
                 }
             });
@@ -299,7 +300,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
                 public void run() {
                     ch_gp.setOnChronometerTickListener(null);
                     ch_gp.stop();
-                    ch_gp.setVisibility(INVISIBLE);
+                    ch_gp.setVisibility(View.INVISIBLE);
                 }
             });
         }
@@ -336,6 +337,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             pb.post(new Runnable() {
                 @Override
                 public void run() {
+                    pb.setVisibility(View.INVISIBLE);
                     pb.setIndeterminate(true);
                 }
             });
@@ -345,6 +347,7 @@ class MainActivityCtFwSDisplay implements CtFwSGameStateManager.Observer {
             pb.post(new Runnable() {
                 @Override
                 public void run() {
+                    pb.setVisibility(View.INVISIBLE);
                     pb.setIndeterminate(true);
                 }
             });

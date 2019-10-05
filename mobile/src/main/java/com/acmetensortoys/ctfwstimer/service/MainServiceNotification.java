@@ -17,7 +17,7 @@ import android.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 
-import com.acmetensortoys.ctfwstimer.activity.MainActivity;
+import com.acmetensortoys.ctfwstimer.activity.main.Activity;
 import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
@@ -39,7 +39,7 @@ class MainServiceNotification {
     MainServiceNotification(MainService ms, CtFwSGameStateManager game){
         mService = ms;
 
-        Intent ni = new Intent(ms, MainActivity.class);
+        Intent ni = new Intent(ms, Activity.class);
         ni.setAction(Intent.ACTION_MAIN);
         ni.addCategory(Intent.CATEGORY_LAUNCHER);
         ni.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

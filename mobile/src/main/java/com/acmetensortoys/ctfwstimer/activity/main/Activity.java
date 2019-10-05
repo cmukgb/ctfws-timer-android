@@ -1,4 +1,4 @@
-package com.acmetensortoys.ctfwstimer.activity;
+package com.acmetensortoys.ctfwstimer.activity.main;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,15 +18,20 @@ import android.widget.TextView;
 
 import com.acmetensortoys.ctfwstimer.BuildConfig;
 import com.acmetensortoys.ctfwstimer.R;
+import com.acmetensortoys.ctfwstimer.activity.AboutActivity;
+import com.acmetensortoys.ctfwstimer.activity.CtFwSActivityBase;
+import com.acmetensortoys.ctfwstimer.activity.HandbookActivity;
+import com.acmetensortoys.ctfwstimer.activity.main.BuildHooksImpl;
+import com.acmetensortoys.ctfwstimer.activity.SettingsActivity;
 import com.acmetensortoys.ctfwstimer.service.MainService;
 import com.acmetensortoys.ctfwstimer.utils.AndroidResourceUtils;
 import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
 
-public class MainActivity extends CtFwSActivityBase {
+public class Activity extends CtFwSActivityBase {
 
     private static final String TAG = "CtFwS";
 
-    private final MainActivityBuildHooks mabh = new MainActivityBuildHooksImpl();
+    private final BuildHooks mabh = new BuildHooksImpl();
 
     private MainService.MqttServerEvent mLastMSE;
     private final MainService.Observer mSrvObs = new MainService.Observer() {
@@ -76,7 +81,7 @@ public class MainActivity extends CtFwSActivityBase {
 
     private MenuItem mMenuReconn;
 
-    private MainActivityCtFwSDisplay mCdl; // set in onStart
+    private CtFwSDisplay mCdl; // set in onStart
     private TextView mTvSU; // set in onStart
     private TextView mTvSS; // set in onStart
     private void setServerStateText(@StringRes final int resid, Object... args) {
@@ -119,13 +124,13 @@ public class MainActivity extends CtFwSActivityBase {
         mTvSU = findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = findViewById(R.id.tv_mqtt_state);
 
-        mCdl = new MainActivityCtFwSDisplay(this);
+        mCdl = new CtFwSDisplay(this);
     }
 
     protected void doRegisterObservers(){
         mSrvBinder.getGameState().registerObserver(mCdl);
         mSrvBinder.registerObserver(mSrvObs);
-        mabh.onRegisterObservers(MainActivity.this, mSrvBinder);
+        mabh.onRegisterObservers(Activity.this, mSrvBinder);
     }
 
     @Override
@@ -217,7 +222,7 @@ public class MainActivity extends CtFwSActivityBase {
                 startActivity(new Intent(this, HandbookActivity.class));
                 return true;
             case R.id.mainmenu_judge:
-                startActivity(new Intent(this, JudgeActivity.class));
+                startActivity(new Intent(this, Activity.class));
                 return true;
             case R.id.mainmenu_screenwake:
                 boolean checked = mi.isChecked();
