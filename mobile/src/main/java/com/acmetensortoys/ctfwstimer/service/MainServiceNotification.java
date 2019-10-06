@@ -63,7 +63,7 @@ class MainServiceNotification {
                 .setContentIntent(PendingIntent.getActivity(ms, 0, ni, 0));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            userNoteBuilder.setVisibility(Notification.VISIBILITY_PUBLIC);
+            userNoteBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         }
 
         game.registerObserver(new CtFwSGameStateManager.Observer() {

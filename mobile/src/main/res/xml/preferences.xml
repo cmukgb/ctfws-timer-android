@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <com.acmetensortoys.ctfwstimer.utils.DefaultableEditTextPreference
         android:selectAllOnFocus="true"
@@ -43,4 +44,4 @@
         android:key="prf_vibr_mesg"
         android:title="@string/preftext_sound_mesg" />
 
-</PreferenceScreen>
+</android.support.v7.preference.PreferenceScreen>

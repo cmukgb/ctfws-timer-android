@@ -7,7 +7,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import androidx.annotation.Nullable;
 import androidx.core.util.Consumer;
 import android.util.Log;
@@ -57,7 +57,6 @@ public class MainService extends Service {
         }
     });
 
-    @SuppressWarnings({"FieldCanBeLocal"})
     private MainServiceNotification mMsn; // set in onCreate
 
     public MainService() { }
