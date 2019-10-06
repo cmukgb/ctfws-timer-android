@@ -21,6 +21,7 @@ import com.acmetensortoys.ctfwstimer.activity.main.Activity;
 import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 
+import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.SortedSet;
 
@@ -137,7 +138,8 @@ class MainServiceNotification {
                 // asserted, in which case, we allow a correction.
                 if (game.getFlagsVisible()
                         && ((lastContextTextSource == LastContentTextSource.FLAG)
-                            || (game.getFlagsRed() + game.getFlagsYel() > 0))) {
+                            || !game.getFlagsRed().equals(BigInteger.ZERO)
+                            || !game.getFlagsYel().equals(BigInteger.ZERO))) {
                     notifyUserSomehow(NotificationSource.FLAG);
                     lastContextTextSource = LastContentTextSource.FLAG;
                     NumberFormat nf = NumberFormat.getIntegerInstance();

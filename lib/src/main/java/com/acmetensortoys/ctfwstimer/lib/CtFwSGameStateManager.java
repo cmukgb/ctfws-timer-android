@@ -1,5 +1,6 @@
 package com.acmetensortoys.ctfwstimer.lib;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.Locale;
@@ -198,8 +199,8 @@ public class CtFwSGameStateManager {
     private class Flags {
         public boolean flagsVisible = false;
         public long flagsTime = 0;
-        public int  flagsRed = 0;
-        public int  flagsYel = 0;
+        public BigInteger flagsRed = BigInteger.ZERO;
+        public BigInteger flagsYel = BigInteger.ZERO;
 
         public boolean equals(Flags f) {
             return     (this.flagsVisible == f.flagsVisible)
@@ -214,10 +215,11 @@ public class CtFwSGameStateManager {
         Scanner s = new Scanner(tm);
         try {
             f.flagsTime = s.nextLong();
-            f.flagsRed = s.nextInt();
-            f.flagsYel = s.nextInt();
+            f.flagsRed = s.nextBigInteger();
+            f.flagsYel = s.nextBigInteger();
             f.flagsVisible = true;
         } catch (NumberFormatException | InputMismatchException e) {
+            // XXX This isn't quite right.
             f.flagsVisible = false;
         }
         if (!curflags.equals(f)) {
@@ -230,12 +232,14 @@ public class CtFwSGameStateManager {
             return "?";
         }
 
-        return String.format(Locale.ROOT, "%d %d", curflags.flagsRed, curflags.flagsYel);
+        return String.format(Locale.ROOT, "%d %d %d",
+                curflags.flagsTime,
+                curflags.flagsRed, curflags.flagsYel);
     }
     public boolean getFlagsVisible() { return curflags.flagsVisible; }
     // Only sensible if flags visible
-    public int getFlagsRed() { return curflags.flagsRed; }
-    public int getFlagsYel() { return curflags.flagsYel; }
+    public BigInteger getFlagsRed() { return curflags.flagsRed; }
+    public BigInteger getFlagsYel() { return curflags.flagsYel; }
 
     // Informative messages handling
     public class Msg implements Comparable<Msg> {
