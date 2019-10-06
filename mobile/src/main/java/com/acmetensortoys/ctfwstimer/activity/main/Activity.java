@@ -53,7 +53,7 @@ public class Activity extends CtFwSActivityBase {
         public void onMqttServerEvent(MainService.LocalBinder b, MainService.MqttServerEvent mse) {
             mLastMSE = mse;
             if (mMenuReconn != null) {
-                setMenuReconnVis(mse);
+                updateMenuReconnVis();
             }
             switch(mse) {
                 case MSE_CONN:
@@ -262,7 +262,7 @@ public class Activity extends CtFwSActivityBase {
 
         mMenuReconn = menu.findItem(R.id.mainmenu_reconn);
         if (mLastMSE != null) {
-            setMenuReconnVis(mLastMSE);
+            updateMenuReconnVis();
         }
 
 
@@ -273,15 +273,20 @@ public class Activity extends CtFwSActivityBase {
         return true;
     }
 
-    private void setMenuReconnVis(MainService.MqttServerEvent mse) {
-        switch(mse) {
-            case MSE_CONN:
-            case MSE_SUB:
-                mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-                break;
-            case MSE_DISCONN:
-                mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                break;
-        }
+    private void updateMenuReconnVis() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                switch(mLastMSE) {
+                    case MSE_CONN:
+                    case MSE_SUB:
+                        mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                        break;
+                    case MSE_DISCONN:
+                        mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                        break;
+                }
+            }
+        });
     }
 }
