@@ -214,6 +214,7 @@ public class MainService extends Service {
         Log.d("Service", "domqtt");
 
         // Hang up on an existing connection, if we have one
+        setMSE(MqttServerEvent.MSE_DISCONN);
         if (mMqc != null) {
             mMqc.setCallback(null);
 
