@@ -86,16 +86,19 @@ class MainServiceNotification {
                     Resources rs = mService.getResources();
 
                     if (now.rationale == CtFwSGameStateManager.NowRationale.NR_GAME_IN_PROGRESS) {
-                        userNoteBuilder.setSubText(rs.getString(R.string.notify_game_afoot));
-                        String ct;
+                        String ct, st;
                         if (now.round == 0) {
-                            ct = rs.getString(R.string.notify_game_setup);
+                            st = rs.getString(R.string.notify_game_setup);
+                            ct = rs.getString(R.string.notify_game_start_soon);
                         } else if (now.round == game.getRounds()) {
+                            st = rs.getString(R.string.notify_game_afoot);
                             ct = rs.getString(R.string.notify_game_end_soon);
                         } else {
+                            st = rs.getString(R.string.notify_game_afoot);
                             ct = String.format(rs.getString(R.string.notify_jailbreak),
                                     now.round, game.getRounds() - 1);
                         }
+                        userNoteBuilder.setSubText(st);
                         userNoteBuilder.setContentTitle(ct);
                     } else {
                         userNoteBuilder.setSubText(rs.getString(R.string.notify_start_future));

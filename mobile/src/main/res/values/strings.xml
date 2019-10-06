@@ -39,7 +39,8 @@
     <string name="header_messages">Messages:</string>
 
     <string name="notify_game_afoot">The game\'s afoot!</string>
-    <string name="notify_game_end_soon">Game ending soon</string>
+    <string name="notify_game_start_soon">Awaiting start of game&#8230;</string>
+    <string name="notify_game_end_soon">No more jailbreaks!</string>
     <string name="notify_game_setup">Setup phase</string>
     <string name="notify_start_future">Start time in the future!</string>
     <string name="notify_game_over">Game over!</string>
