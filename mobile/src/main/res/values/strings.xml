@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="server_default">tcp://ctfws-mqtt.cmukgb.org:1883</string>
+    <string name="server_default">ssl://ctfws-mqtt.cmukgb.org:8883</string>
 
     <string name="app_name">CtFwS Timer</string>
     <string name="app_name_hand">CtFwS Handbook</string>
