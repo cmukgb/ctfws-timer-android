@@ -25,14 +25,17 @@ public class HandbookActivity extends CtFwSActivityBase {
 
     private CtFwSDisplayTinyChrono mTitleChronoObs;
     private WebView mWV;
+    private long displayedTS;
 
     private void display() {
         final File dlf = new File(getFilesDir(), HAND_FILE_NAME);
         if (dlf.exists()) {
             /* render the version we've downloaded */
+            displayedTS = dlf.lastModified()/1000;
             mWV.loadUrl(dlf.toURI().toString());
         } else {
             /* render the version we were shipped with instead */
+            displayedTS = 0;
             mWV.loadUrl("file:///android_asset/hand.html");
         }
     }
@@ -50,13 +53,15 @@ public class HandbookActivity extends CtFwSActivityBase {
 
         @Override
         public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
-            display();
-            if (dl != null && dl.getResult() == CheckedAsyncDownloader.Result.RES_OK) {
+            if (dl != null
+                    && dl.getResult() == CheckedAsyncDownloader.Result.RES_OK
+                    && dl.getDLtime() != displayedTS) {
                 Toast.makeText(HandbookActivity.this,
                                 R.string.hand_new,
                                 Toast.LENGTH_SHORT)
                      .show();
             }
+            display();
         }
     };
 
