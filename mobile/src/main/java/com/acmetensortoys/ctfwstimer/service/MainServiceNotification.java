@@ -13,7 +13,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
 

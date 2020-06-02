@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Consumer;
 import android.util.Log;
 
+import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
 import com.acmetensortoys.ctfwstimer.lib.TimerProvider;
 import com.acmetensortoys.ctfwstimer.utils.CheckedAsyncDownloader;
@@ -312,7 +313,16 @@ public class MainService extends Service {
             = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            switch(key) { case "server": doMqtt(sharedPreferences.getString(key,null)); break; }
+            switch(key) {
+                case "server_def" :
+                case "server":
+                    boolean useDefault = sharedPreferences.getBoolean("server_def", true);
+                    String server = useDefault
+                            ? getString(R.string.server_default)
+                            : sharedPreferences.getString("server", null);
+                    doMqtt(server);
+                    break;
+            }
         }
     };
 

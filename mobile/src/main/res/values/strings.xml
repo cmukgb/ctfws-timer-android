@@ -64,6 +64,9 @@
     <string name="mqtt_subbed_tdelta" tools:ignore="PluralsCandidate">Subscribed (est. %1$d sec. diff.)</string>
 
     <string name="preftext_mqtt">Set MQTT Server</string>
+    <string name="preftext_mqtt_def">Use Default MQTT Server</string>
+    <string name="preftext_mqtt_prefcat">MQTT Server</string>
+    <string name="preftext_notif_prefcat">Notification Settings</string>
     <string name="preftext_vibrate_jb">Vibrate on Jailbreak?</string>
     <string name="preftext_vibrate_flag">Vibrate on Flag Capture?</string>
     <string name="preftext_vibrate_mesg">Vibrate on Message?</string>

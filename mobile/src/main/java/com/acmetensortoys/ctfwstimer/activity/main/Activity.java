@@ -1,9 +1,7 @@
 package com.acmetensortoys.ctfwstimer.activity.main;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import androidx.preference.PreferenceManager;
 import androidx.annotation.StringRes;
 import android.os.Bundle;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -111,14 +109,6 @@ public class Activity extends CtFwSActivityBase {
         });
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sp.getString("server", null) == null) {
-            sp.edit().putString("server", getString(R.string.server_default)).apply();
-        }
-        if (BuildConfig.DEBUG && sp.getString("server", null) == null) {
-            throw new AssertionError("Shared Preferences not sticking!");
-        }
 
         mTvSU = findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = findViewById(R.id.tv_mqtt_state);
