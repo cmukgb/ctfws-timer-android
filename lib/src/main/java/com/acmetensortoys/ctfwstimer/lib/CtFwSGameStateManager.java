@@ -300,6 +300,7 @@ public class CtFwSGameStateManager {
     }
     public void onMessageReset(long before) {
         synchronized(this) {
+            lastMsgTimestamp = Long.max(before, lastMsgTimestamp);
             if (!msgs.isEmpty() && msgs.first().when <= before) {
                 msgs = msgs.tailSet(new Msg(before, ""));
             }
