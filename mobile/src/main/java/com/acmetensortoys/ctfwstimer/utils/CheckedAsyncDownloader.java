@@ -33,14 +33,16 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
         public final byte[] sha256;
         public final File dest;
         public final long lengthLimit; /* In bytes, or 0 for no limit */
+        private final long dltime; /* seconds since unix epoch */
         private Result result;
-        private long dlsize;
+        private long dlsize; /* valid only if result OK or ALREADY */
 
-        public DL(URL url, byte[] sha256, long lim, File dest) {
+        public DL(URL url, byte[] sha256, long lim, long ts, File dest) {
             this.url = url;
             this.sha256 = sha256;
             this.dest = dest;
             this.lengthLimit = lim;
+            this.dltime = ts;
             this.result = Result.RES_UNTRIED;
             this.dlsize = 0;
         }
@@ -50,12 +52,17 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
             this.sha256 = dl.sha256;
             this.dest = dl.dest;
             this.lengthLimit = dl.lengthLimit;
+            this.dltime = dl.dltime;
             this.result = dl.result;
             this.dlsize = dl.dlsize;
         }
 
         public Result getResult() { return result; }
-        public long getDlsize() { return dlsize ; }
+
+        /** Valid only if result OK or ALREADY */
+        public long getDlsize() { return dlsize; }
+        /** TAI seconds since UNIX epoch; valid only if result OK or ALREADY */
+        public long getDLtime() { return dltime; }
     }
 
     @Override
@@ -164,6 +171,9 @@ public class CheckedAsyncDownloader extends AsyncTask<CheckedAsyncDownloader.DL,
                 oft.delete();
                 continue;
             }
+
+            //noinspection ResultOfMethodCallIgnored
+            oft.setLastModified(dl.dltime*1000); // value in milliseconds, sigh
 
             if (!oft.renameTo(dl.dest)) {
                 dl.result = Result.ERR_WRITE;
