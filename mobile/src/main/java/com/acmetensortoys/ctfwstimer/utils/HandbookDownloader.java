@@ -141,6 +141,7 @@ public class HandbookDownloader implements IMqttMessageListener {
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         /* Try to parse the message: URL timestamp checksum */
         String url, checksum_str;
+        long ts;
 
         Log.d(TAG, "Begin processing download via '" + message.toString());
         if (this.downloader != null) {
@@ -151,7 +152,7 @@ public class HandbookDownloader implements IMqttMessageListener {
         try {
             Scanner s = new Scanner(message.toString().trim());
             url = s.next();
-            s.next(); /* discard timestamp */
+            ts = s.nextLong(); /* discard timestamp */
             checksum_str = s.next();
         } catch (NoSuchElementException nsee) {
             /* Malformed message; give up */
@@ -194,7 +195,7 @@ public class HandbookDownloader implements IMqttMessageListener {
             }
 
             this.downloader = new Task(this);
-            this.download = new CheckedAsyncDownloader.DL(new URL(url), checksum, HAND_MAX_LEN,
+            this.download = new CheckedAsyncDownloader.DL(new URL(url), checksum, HAND_MAX_LEN, ts,
                     new File(mCtx.getFilesDir(), HandbookActivity.HAND_FILE_NAME));
             this.downloader.execute(this.download);
         }
