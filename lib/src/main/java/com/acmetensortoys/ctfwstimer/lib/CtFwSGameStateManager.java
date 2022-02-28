@@ -352,7 +352,7 @@ public class CtFwSGameStateManager {
     private synchronized void notifyNow() {
         mT.cancelPost(futureNotifyNow);
         Now n = getNow(mT.wallMS());
-        if (n.rationale == NowRationale.NR_GAME_IN_PROGRESS || !n.stop) {
+        if (!n.stop) {
             mT.postDelay(futureNotifyNow, n.roundEnd*1000 - n.wallMS);
         }
         for (Observer o : mObsvs) { o.onCtFwSNow(this, n); }
