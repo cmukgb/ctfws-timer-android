@@ -1,6 +1,7 @@
 package com.acmetensortoys.ctfwstimer.activity.main;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
@@ -10,9 +11,12 @@ import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Chronometer;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.preference.PreferenceManager;
 
 import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.lib.CtFwSGameStateManager;
@@ -199,6 +203,13 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         }
         // Otherwise, it's game on!
 
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mAct);
+        if (sp.getBoolean("screen_on_when_game", false)) {
+            Log.d("CtFwS", "Requesting screen on");
+            mAct.runOnUiThread(() -> mAct.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                    | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON));
+        }
+
         // Upper line text
         {
             final TextView tv_jb = mAct.findViewById(R.id.tv_jailbreak);
@@ -306,8 +317,20 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         }
     }
 
+    private void resetWindow() {
+        mAct.runOnUiThread(() -> resetWindow(mAct));
+    }
+
+    public static void resetWindow(Activity act) {
+        Log.d("CtFwS", "window reset");
+        act.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+    }
+
     private void doReset() {
         Log.d("CtFwS", "Display Reset");
+
+        resetWindow();
 
         {
             final Chronometer ch = mAct.findViewById(R.id.ch_jailbreak);

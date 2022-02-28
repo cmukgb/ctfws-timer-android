@@ -4,13 +4,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/mainmenu_screenwake"
-        android:checkable="true"
-        android:enabled="true"
-        android:title="@string/menutext_screenwake"
-        android:visible="true"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/mainmenu_hand"
         android:icon="@drawable/ic_library_books_24dp"
         android:title="@string/menutext_handbook"

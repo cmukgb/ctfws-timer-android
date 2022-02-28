@@ -53,7 +53,6 @@
     <string name="menutext_prf">Settings</string>
     <string name="menutext_quit">Quit</string>
     <string name="menutext_reconn">Reconnect</string>
-    <string name="menutext_screenwake">Keep Screen On</string>
     <string name="menutext_search">Search</string>
 
     <string name="mqtt_state_label">Server State:</string>
@@ -66,6 +65,8 @@
     <string name="preftext_mqtt_def">Use Default MQTT Server</string>
     <string name="preftext_mqtt_prefcat">MQTT Server</string>
     <string name="preftext_notif_prefcat">Notification Settings</string>
+    <string name="preftext_screen_prefcat">Screen and Window Behavior</string>
+    <string name="preftext_screen_on_when_game">Stay awake in foreground during games</string>
     <string name="preftext_vibrate_jb">Vibrate on Jailbreak?</string>
     <string name="preftext_vibrate_flag">Vibrate on Flag Capture?</string>
     <string name="preftext_vibrate_mesg">Vibrate on Message?</string>

@@ -18,8 +18,15 @@
         app:isPreferenceVisible="false"/>
 
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/preftext_notif_prefcat">
+    <PreferenceCategory android:title="@string/preftext_screen_prefcat">
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="screen_on_when_game"
+            android:title="@string/preftext_screen_on_when_game" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/preftext_notif_prefcat">
 
     <CheckBoxPreference
         android:defaultValue="true"

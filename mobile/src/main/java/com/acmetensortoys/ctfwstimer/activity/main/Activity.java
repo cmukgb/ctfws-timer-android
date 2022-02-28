@@ -114,6 +114,8 @@ public class Activity extends CtFwSActivityBase {
     public void onStart() {
         Log.d(TAG, "onStart");
         super.onStart();
+
+        CtFwSDisplay.resetWindow(this);
     }
 
     @Override
@@ -201,14 +203,6 @@ public class Activity extends CtFwSActivityBase {
             case R.id.mainmenu_judge:
                 startActivity(new Intent(this, Activity.class));
                 return true;
-            case R.id.mainmenu_screenwake:
-                boolean checked = mi.isChecked();
-                if (checked) {
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                } else {
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                }
-                mi.setChecked(!checked);
             case R.id.mainmenu_reconn:
                 if (mSrvBinder != null) {
                     mSrvBinder.connect(true);
