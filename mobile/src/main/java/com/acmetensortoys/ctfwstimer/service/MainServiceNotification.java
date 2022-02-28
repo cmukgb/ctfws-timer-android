@@ -57,10 +57,15 @@ class MainServiceNotification {
             nm.createNotificationChannel(nc);
         }
 
+        int pendflags = PendingIntent.FLAG_CANCEL_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendflags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+
         userNoteBuilder = new NotificationCompat.Builder(ms, CTFWS_GAME_CHANNEL_ID)
                 .setOnlyAlertOnce(false)
                 .setSmallIcon(R.drawable.ic_hammer_and_sickle)
-                .setContentIntent(PendingIntent.getActivity(ms, 0, ni, 0));
+                .setContentIntent(PendingIntent.getActivity(ms, 0, ni, pendflags));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             userNoteBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
