@@ -312,23 +312,23 @@ public class MainService extends Service {
         Log.d("Service", "Connect dispatched");
     }
 
+    private String getServerFromPrefs(SharedPreferences sharedPreferences) {
+        boolean useDefault = sharedPreferences.getBoolean("server_def", true);
+        return useDefault
+                ? getString(R.string.server_default)
+                : sharedPreferences.getString("server", null);
+    }
+
     // Must hold strongly since Android only holds weakly once registered.
     private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
-            = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            switch(key) {
-                case "server_def" :
-                case "server":
-                    boolean useDefault = sharedPreferences.getBoolean("server_def", true);
-                    String server = useDefault
-                            ? getString(R.string.server_default)
-                            : sharedPreferences.getString("server", null);
-                    doMqtt(server);
-                    break;
-            }
-        }
-    };
+            = (sharedPreferences, key) -> {
+                switch(key) {
+                    case "server_def" :
+                    case "server":
+                        doMqtt(getServerFromPrefs(sharedPreferences));
+                        break;
+                }
+            };
 
     // MQTT Observers
     public enum MqttServerEvent {
@@ -388,7 +388,7 @@ public class MainService extends Service {
                 SharedPreferences sp = PreferenceManager
                         .getDefaultSharedPreferences(MainService.this);
                 sp.registerOnSharedPreferenceChangeListener(mOSPCL);
-                doMqtt(sp.getString("server", null));
+                doMqtt(getServerFromPrefs(sp));
             }
         }
         public void registerObserver(Observer o) {
@@ -410,6 +410,10 @@ public class MainService extends Service {
         }
         public void exit() {
             mMsn.ensureNoNotification(true);
+        }
+
+        public String debugGetServerURL() {
+            return mMqc.getServerURI();
         }
     }
     private final LocalBinder mBinder = new LocalBinder();
