@@ -1,6 +1,7 @@
 package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.SystemClock;
 import android.widget.Chronometer;
 
@@ -64,7 +65,10 @@ public class CtFwSDisplayTinyChrono implements CtFwSGameStateManager.Observer {
                 mCh.setFormat(String.format(mRes.getString(R.string.ctfws_chrono_jailbreak),
                                 now.round));
             }
-            mCh.setBase(now.roundStart * 1000 - tbcf);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                mCh.setCountDown(true);
+            }
+            mCh.setBase(now.roundEnd * 1000 - tbcf);
             mCh.start();
         });
     }
