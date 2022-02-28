@@ -84,12 +84,7 @@ public class AboutActivity extends CtFwSActivityBase {
             sb.append("Null service binder\n");
         }
 
-        mTvDebug.post(new Runnable() {
-            @Override
-            public void run() {
-                mTvDebug.setText(sb);
-            }
-        });
+        mTvDebug.post(() -> mTvDebug.setText(sb));
     }
 
     @Override
@@ -106,15 +101,12 @@ public class AboutActivity extends CtFwSActivityBase {
         }
 
         View iv = findViewById(R.id.about_image);
-        iv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("http://www.cmukgb.org/")));
-                } catch (ActivityNotFoundException anfe) {
-                    // NOP
-                }
+        iv.setOnClickListener(v -> {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("http://www.cmukgb.org/")));
+            } catch (ActivityNotFoundException anfe) {
+                // NOP
             }
         });
 

@@ -1,20 +1,21 @@
 package com.acmetensortoys.ctfwstimer.activity.main;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import android.os.Bundle;
 import androidx.appcompat.view.menu.MenuBuilder;
+
 import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.acmetensortoys.ctfwstimer.BuildConfig;
 import com.acmetensortoys.ctfwstimer.R;
 import com.acmetensortoys.ctfwstimer.activity.AboutActivity;
 import com.acmetensortoys.ctfwstimer.activity.CtFwSActivityBase;
@@ -62,7 +63,6 @@ public class Activity extends CtFwSActivityBase {
 
         @Override
         public void onHandbookFetch(MainService.LocalBinder b, CheckedAsyncDownloader.DL dl) {
-            ;
         }
     };
 
@@ -72,10 +72,7 @@ public class Activity extends CtFwSActivityBase {
     private TextView mTvSS; // set in onStart
     private void setServerStateText(@StringRes final int resid, Object... args) {
         final Spanned h = AndroidResourceUtils.htmlFromStrResId(getResources(), resid, args);
-        mTvSS.post(new Runnable() {
-            @Override
-            public void run() { mTvSS.setText(h); }
-        });
+        mTvSS.post(() -> mTvSS.setText(h));
     }
 
     @Override
@@ -83,19 +80,8 @@ public class Activity extends CtFwSActivityBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.main_connmeta).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onclick_connmeta(v);
-            }
-        });
-
-        findViewById(R.id.header_gamestate).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onclick_gamestate(v);
-            }
-        });
+        findViewById(R.id.main_connmeta).setOnClickListener(this::onclick_connmeta);
+        findViewById(R.id.header_gamestate).setOnClickListener(this::onclick_gamestate);
 
         mTvSS = findViewById(R.id.tv_mqtt_state);
 
@@ -136,7 +122,7 @@ public class Activity extends CtFwSActivityBase {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle out) {
+    public void onSaveInstanceState(@NonNull Bundle out) {
         super.onSaveInstanceState(out);
         mCdl.timersToBundle(out, SIS_KEY_TMR_FINI);
     }
@@ -172,15 +158,13 @@ public class Activity extends CtFwSActivityBase {
         if (!egg) {
             egg = true;
             tv.setText(R.string.header_egg);
-            tv.postDelayed(new Runnable() {
-                public void run() {
-                    if (mCdl != null) {
-                        tv.setText(mCdl.gameStateLabelText);
-                    } else {
-                        tv.setText(R.string.header_gamestate0);
-                    }
-                    egg = false;
+            tv.postDelayed(() -> {
+                if (mCdl != null) {
+                    tv.setText(mCdl.gameStateLabelText);
+                } else {
+                    tv.setText(R.string.header_gamestate0);
                 }
+                egg = false;
             }, 3000);
         }
     }
@@ -194,36 +178,33 @@ public class Activity extends CtFwSActivityBase {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem mi) {
-        switch(mi.getItemId()) {
-            case R.id.mainmenu_hand:
-                startActivity(new Intent(this, HandbookActivity.class));
-                return true;
-            case R.id.mainmenu_judge:
-                startActivity(new Intent(this, Activity.class));
-                return true;
-            case R.id.mainmenu_reconn:
-                if (mSrvBinder != null) {
-                    mSrvBinder.connect(true);
-                }
-                return true;
-            case R.id.mainmenu_prf :
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-            case R.id.mainmenu_about :
-                startActivity(new Intent(this, AboutActivity.class));
-                return true;
-            case R.id.mainmenu_quit:
-                if (mSrvBinder != null) {
-                    mSrvBinder.exit();
-                }
-                finish();
-                return true;
+        int itemId = mi.getItemId();
+        if (itemId == R.id.mainmenu_hand) {
+            startActivity(new Intent(this, HandbookActivity.class));
+            return true;
+        } else if (itemId == R.id.mainmenu_reconn) {
+            if (mSrvBinder != null) {
+                mSrvBinder.connect(true);
+            }
+            return true;
+        } else if (itemId == R.id.mainmenu_prf) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        } else if (itemId == R.id.mainmenu_about) {
+            startActivity(new Intent(this, AboutActivity.class));
+            return true;
+        } else if (itemId == R.id.mainmenu_quit) {
+            if (mSrvBinder != null) {
+                mSrvBinder.exit();
+            }
+            finish();
+            return true;
             // Cam: Changing this doesn't appear to do anything? Leaving just in case.
-            default:
-                return super.onOptionsItemSelected(mi);
         }
+        return super.onOptionsItemSelected(mi);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater mi = getMenuInflater();
@@ -243,18 +224,15 @@ public class Activity extends CtFwSActivityBase {
     }
 
     private void updateMenuReconnVis() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                switch(mLastMSE) {
-                    case MSE_CONN:
-                    case MSE_SUB:
-                        mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
-                        break;
-                    case MSE_DISCONN:
-                        mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                        break;
-                }
+        runOnUiThread(() -> {
+            switch(mLastMSE) {
+                case MSE_CONN:
+                case MSE_SUB:
+                    mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+                    break;
+                case MSE_DISCONN:
+                    mMenuReconn.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    break;
             }
         });
     }

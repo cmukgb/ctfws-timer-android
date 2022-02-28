@@ -23,7 +23,6 @@ import org.eclipse.paho.android.service.MqttTraceHandler;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -128,26 +127,23 @@ public class MainService extends Service {
                 mMqc.subscribe(p + "messagereset", 2, null, subal, mCtfwscbs.onMessageReset);
 
                 /* This one isn't really about the game state so much, so handle it ourselves. */
-                mMqc.subscribe("ctfws/timesync", 2, null, subal, new IMqttMessageListener() {
-                    @Override
-                    public void messageArrived(String topic, MqttMessage message) {
-                        // Retained timesync messages wouldn't make any sense; they are,
-                        // by definition, stale.  Just skip 'em.
-                        if (message.isRetained()) {
-                            return;
-                        }
-                        long rxtime = System.currentTimeMillis() / 1000;
-                        long mtime;
-                        String msg = message.toString();
-                        Log.d("CtFws", "time msg=" + msg);
-                        try {
-                            mtime = Long.parseLong(msg);
-                        } catch (NumberFormatException e) {
-                            return;
-                        }
-                        lastServerTimeDeltaEstimate = rxtime - mtime;
-                        notifyMSE();
+                mMqc.subscribe("ctfws/timesync", 2, null, subal, (topic, message) -> {
+                    // Retained timesync messages wouldn't make any sense; they are,
+                    // by definition, stale.  Just skip 'em.
+                    if (message.isRetained()) {
+                        return;
                     }
+                    long rxtime = System.currentTimeMillis() / 1000;
+                    long mtime;
+                    String msg = message.toString();
+                    Log.d("CtFws", "time msg=" + msg);
+                    try {
+                        mtime = Long.parseLong(msg);
+                    } catch (NumberFormatException e) {
+                        return;
+                    }
+                    lastServerTimeDeltaEstimate = rxtime - mtime;
+                    notifyMSE();
                 });
 
                 mHandDL.subscribeOn(mMqc);

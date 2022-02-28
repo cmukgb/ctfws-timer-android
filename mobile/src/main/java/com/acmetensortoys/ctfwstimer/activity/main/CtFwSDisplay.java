@@ -51,12 +51,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
 
     private void wireTimer(int vid, final StunTimer st) {
         mAct.findViewById(vid)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startTimer(st, System.currentTimeMillis());
-                    }
-                });
+                .setOnClickListener(v -> startTimer(st, System.currentTimeMillis()));
     }
 
     void timersToBundle(Bundle out, String key) {
@@ -118,23 +113,13 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         }
 
         final TextView gstv = mAct.findViewById(R.id.header_gamestate);
-        gstv.post(new Runnable() {
-            @Override
-            public void run() {
-                gstv.setText(gameStateLabelText);
-            }
-        });
+        gstv.post(() -> gstv.setText(gameStateLabelText));
     }
 
     private void doSetSidesText(final CtFwSGameStateManager gs) {
         final TextView stv = mAct.findViewById(R.id.header_sides);
         Resources rs = mAct.getResources();
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                stv.setText("");
-            }
-        };
+        Runnable r = () -> stv.setText("");
 
         out: if (gs.isConfigured()) {
             String ss = gs.getSides();
@@ -148,12 +133,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
                     default   : h = AndroidResourceUtils.htmlFromStrResId(rs, R.string.ctfws_unknown_sides); break;
                 }
 
-                r = new Runnable() {
-                    @Override
-                    public void run() {
-                        stv.setText(h);
-                    }
-                };
+                r = () -> stv.setText(h);
             }
         }
 
@@ -162,15 +142,10 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
 
     private void doSetFlagsLabel(final CtFwSGameStateManager gs) {
         final TextView tv_flags = mAct.findViewById(R.id.tv_flags_label);
-        tv_flags.post(new Runnable() {
-            @Override
-            public void run() {
-                tv_flags.setText(mAct.getResources()
-                        .getQuantityString(R.plurals.ctfws_flags,
-                                gs.getFlagsTotal(),
-                                gs.getFlagsTotal()));
-            }
-        });
+        tv_flags.post(() -> tv_flags.setText(mAct.getResources()
+                .getQuantityString(R.plurals.ctfws_flags,
+                        gs.getFlagsTotal(),
+                        gs.getFlagsTotal())));
     }
 
     @Override
@@ -213,18 +188,15 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         // Upper line text
         {
             final TextView tv_jb = mAct.findViewById(R.id.tv_jailbreak);
-            tv_jb.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (now.round == 0) {
-                        tv_jb.setText(R.string.ctfws_gamestart);
-                    } else if (now.round == gs.getRounds()) {
-                        tv_jb.setText(R.string.ctfws_gameend);
-                    } else {
-                        tv_jb.setText(
-                                String.format(mAct.getResources().getString(R.string.ctfws_jailbreak),
-                                        now.round, gs.getRounds() - 1));
-                    }
+            tv_jb.post(() -> {
+                if (now.round == 0) {
+                    tv_jb.setText(R.string.ctfws_gamestart);
+                } else if (now.round == gs.getRounds()) {
+                    tv_jb.setText(R.string.ctfws_gameend);
+                } else {
+                    tv_jb.setText(
+                            String.format(mAct.getResources().getString(R.string.ctfws_jailbreak),
+                                    now.round, gs.getRounds() - 1));
                 }
             });
         }
@@ -232,87 +204,69 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         // Upper progress bar and chronometer
         {
             final ProgressBar pb_jb = mAct.findViewById(R.id.pb_jailbreak);
-            pb_jb.post(new Runnable() {
-                @Override
-                public void run() {
-                    pb_jb.setVisibility(View.VISIBLE);
-                    pb_jb.setIndeterminate(false);
-                    pb_jb.setMax((int) (now.roundEnd - now.roundStart));
-                    pb_jb.setProgress(0);
-                }
+            pb_jb.post(() -> {
+                pb_jb.setVisibility(View.VISIBLE);
+                pb_jb.setIndeterminate(false);
+                pb_jb.setMax((int) (now.roundEnd - now.roundStart));
+                pb_jb.setProgress(0);
             });
 
             final Chronometer ch_jb = mAct.findViewById(R.id.ch_jailbreak);
-            ch_jb.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
-                        ch_jb.setCountDown(true);
-                    } else {
-                        ch_jb.setBase(now.roundStart * 1000 - tbcf);
-                        ch_jb.setBackgroundColor(Color.BLACK);
-                        ch_jb.setTextColor(Color.WHITE);
-                    }
-                    ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                        @Override
-                        public void onChronometerTick(Chronometer c) {
-                            pb_jb.setProgress((int) (now.roundEnd - System.currentTimeMillis() / 1000));
-                        }
-                    });
-                    ch_jb.setVisibility(View.VISIBLE);
-                    ch_jb.start();
+            ch_jb.post(() -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
+                    ch_jb.setCountDown(true);
+                } else {
+                    ch_jb.setBase(now.roundStart * 1000 - tbcf);
+                    ch_jb.setBackgroundColor(Color.BLACK);
+                    ch_jb.setTextColor(Color.WHITE);
                 }
+                ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                    @Override
+                    public void onChronometerTick(Chronometer c) {
+                        pb_jb.setProgress((int) (now.roundEnd - System.currentTimeMillis() / 1000));
+                    }
+                });
+                ch_jb.setVisibility(View.VISIBLE);
+                ch_jb.start();
             });
         }
 
         // Lower progress bar and chronometer
         if (now.round > 0) {
             final ProgressBar pb_gp = mAct.findViewById(R.id.pb_gameProgress);
-            pb_gp.post(new Runnable() {
-                @Override
-                public void run() {
-                    pb_gp.setVisibility(View.VISIBLE);
-                    pb_gp.setIndeterminate(false);
-                    pb_gp.setMax(gs.getComputedGameDuration());
-                    pb_gp.setProgress(0);
-                }
+            pb_gp.post(() -> {
+                pb_gp.setVisibility(View.VISIBLE);
+                pb_gp.setIndeterminate(false);
+                pb_gp.setMax(gs.getComputedGameDuration());
+                pb_gp.setProgress(0);
             });
 
             final Chronometer ch_gp = mAct.findViewById(R.id.ch_gameProgress);
-            ch_gp.post(new Runnable() {
-                @Override
-                public void run() {
-                    ch_gp.setBase(gs.getFirstRoundStartT() * 1000 - tbcf);
-                    ch_gp.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                        @Override
-                        public void onChronometerTick(Chronometer c) {
-                            pb_gp.setProgress((int) (System.currentTimeMillis() / 1000
-                                    - gs.getFirstRoundStartT()));
-                        }
-                    });
-                    ch_gp.setVisibility(View.VISIBLE);
-                    ch_gp.start();
-                }
+            ch_gp.post(() -> {
+                ch_gp.setBase(gs.getFirstRoundStartT() * 1000 - tbcf);
+                ch_gp.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                    @Override
+                    public void onChronometerTick(Chronometer c) {
+                        pb_gp.setProgress((int) (System.currentTimeMillis() / 1000
+                                - gs.getFirstRoundStartT()));
+                    }
+                });
+                ch_gp.setVisibility(View.VISIBLE);
+                ch_gp.start();
             });
         } else {
             final ProgressBar pb_gp = mAct.findViewById(R.id.pb_gameProgress);
-            pb_gp.post(new Runnable() {
-                @Override
-                public void run() {
-                    pb_gp.setVisibility(View.INVISIBLE);
-                    pb_gp.setIndeterminate(true);
-                }
+            pb_gp.post(() -> {
+                pb_gp.setVisibility(View.INVISIBLE);
+                pb_gp.setIndeterminate(true);
             });
 
             final Chronometer ch_gp = mAct.findViewById(R.id.ch_gameProgress);
-            ch_gp.post(new Runnable() {
-                @Override
-                public void run() {
-                    ch_gp.setOnChronometerTickListener(null);
-                    ch_gp.stop();
-                    ch_gp.setVisibility(View.INVISIBLE);
-                }
+            ch_gp.post(() -> {
+                ch_gp.setOnChronometerTickListener(null);
+                ch_gp.stop();
+                ch_gp.setVisibility(View.INVISIBLE);
             });
         }
     }
@@ -334,45 +288,33 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
 
         {
             final Chronometer ch = mAct.findViewById(R.id.ch_jailbreak);
-            ch.post(new Runnable() {
-                @Override
-                public void run() {
-                    ch.setOnChronometerTickListener(null);
-                    ch.setBase(SystemClock.elapsedRealtime());
-                    ch.stop();
-                    ch.setVisibility(View.INVISIBLE);
-                }
+            ch.post(() -> {
+                ch.setOnChronometerTickListener(null);
+                ch.setBase(SystemClock.elapsedRealtime());
+                ch.stop();
+                ch.setVisibility(View.INVISIBLE);
             });
         }
         {
             final Chronometer ch = mAct.findViewById(R.id.ch_gameProgress);
-            ch.post(new Runnable() {
-                @Override
-                public void run() {
-                    ch.setOnChronometerTickListener(null);
-                    ch.stop();
-                    ch.setVisibility(View.INVISIBLE);
-                }
+            ch.post(() -> {
+                ch.setOnChronometerTickListener(null);
+                ch.stop();
+                ch.setVisibility(View.INVISIBLE);
             });
         }
         {
             final ProgressBar pb = mAct.findViewById(R.id.pb_jailbreak);
-            pb.post(new Runnable() {
-                @Override
-                public void run() {
-                    pb.setVisibility(View.INVISIBLE);
-                    pb.setIndeterminate(true);
-                }
+            pb.post(() -> {
+                pb.setVisibility(View.INVISIBLE);
+                pb.setIndeterminate(true);
             });
         }
         {
             final ProgressBar pb = mAct.findViewById(R.id.pb_gameProgress);
-            pb.post(new Runnable() {
-                @Override
-                public void run() {
-                    pb.setVisibility(View.INVISIBLE);
-                    pb.setIndeterminate(true);
-                }
+            pb.post(() -> {
+                pb.setVisibility(View.INVISIBLE);
+                pb.setIndeterminate(true);
             });
         }
     }
@@ -391,12 +333,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         }
 
         final TextView msgs = mAct.findViewById(R.id.tv_flags);
-        msgs.post(new Runnable() {
-            @Override
-            public void run() {
-                msgs.setText(h);
-            }
-        });
+        msgs.post(() -> msgs.setText(h));
     }
 
     @Override
@@ -405,12 +342,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         int s = msgs.size();
 
         if (s == 0) {
-            msgstv.post(new Runnable() {
-                @Override
-                public void run() {
-                    msgstv.setText("");
-                }
-            });
+            msgstv.post(() -> msgstv.setText(""));
             return;
         }
 
@@ -434,16 +366,11 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
             sb.append("\n");
         }
 
-        msgstv.post(new Runnable() {
-            @Override
-            public void run() {
-                msgstv.setText(sb);
-            }
-        });
+        msgstv.post(() -> msgstv.setText(sb));
     }
 
     // Stun timers
-    private class StunTimer {
+    private static class StunTimer {
         final Chronometer ch;
         final ProgressBar pb;
         final int ms;
@@ -481,14 +408,11 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         final long tbcf = nowWall - nowEla;
 
         st.ch.setBase(wallEnd - st.ms - tbcf);
-        st.ch.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-            @Override
-            public void onChronometerTick(Chronometer chronometer) {
-                final long nowAbsCB = System.currentTimeMillis();
-                st.pb.setProgress((int) (wallEnd - nowAbsCB));
-                if (wallEnd < nowAbsCB) {
-                    hideTimer(st);
-                }
+        st.ch.setOnChronometerTickListener(chronometer -> {
+            final long nowAbsCB = System.currentTimeMillis();
+            st.pb.setProgress((int) (wallEnd - nowAbsCB));
+            if (wallEnd < nowAbsCB) {
+                hideTimer(st);
             }
         });
 

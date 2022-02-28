@@ -25,8 +25,6 @@
     </string>
     <string name="ctfws_unknown_sides">We seem to be lost; where are we?</string>
 
-    <string name="dialog_reset">Default</string>
-
     <string name="flags_viz_fmt">
         <![CDATA[<font color=#a94442><b>Red</b>: %1$s</font>, <font color=#8a6d3b><b>Yellow</b>: %2$s</font>]]>
     </string>
@@ -89,7 +87,7 @@
           This project is open source under AGPLv3; see the
             <a href="https://github.com/cmukgb/ctfws-timer-android">GitHub Project Page</a>
           <br/>
-          &#169; 2017-2019 Nathaniel Wesley Filardo, Cameron Wong, and others
+          &copy; 2017-2019 Nathaniel Wesley Filardo, Cameron Wong, and others
         </center>
         ]]>
     </string>

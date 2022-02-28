@@ -43,12 +43,10 @@ public class HandbookActivity extends CtFwSActivityBase {
     private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
         public void onMqttServerChanged(MainService.LocalBinder b, String sURL) {
-            ;
         }
 
         @Override
         public void onMqttServerEvent(MainService.LocalBinder b, MainService.MqttServerEvent mse) {
-            ;
         }
 
         @Override
@@ -112,23 +110,6 @@ public class HandbookActivity extends CtFwSActivityBase {
         sv.setQueryHint("Search handbook...");
         sv.setSubmitButtonEnabled(true);
 
-        /*
-        sv.setOnSearchClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "sv.OClickL");
-            }
-        });
-
-        sv.setOnCloseListener(new SearchView.OnCloseListener() {
-            @Override
-            public boolean onClose() {
-                Log.d(TAG, "sv.OCloseL");
-                return false;
-            }
-        });
-        */
-
         sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -148,9 +129,8 @@ public class HandbookActivity extends CtFwSActivityBase {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.hand_menu_search:
-                return true;
+        if (item.getItemId() == R.id.hand_menu_search) {
+            return true;
         }
 
         return false;

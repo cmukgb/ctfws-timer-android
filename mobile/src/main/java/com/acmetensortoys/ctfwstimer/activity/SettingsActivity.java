@@ -2,7 +2,6 @@ package com.acmetensortoys.ctfwstimer.activity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
@@ -21,16 +20,13 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private final SharedPreferences.OnSharedPreferenceChangeListener mOSPCL
-                = new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-                switch (key) {
-                    case "server_def":
-                        findPreference("server").setVisible(!sp.getBoolean(key, false));
-                        break;
-                }
-            }
-        };
+                = (sp, key) -> {
+                    switch (key) {
+                        case "server_def":
+                            findPreference("server").setVisible(!sp.getBoolean(key, false));
+                            break;
+                    }
+                };
 
         @Override
         public void onResume() {

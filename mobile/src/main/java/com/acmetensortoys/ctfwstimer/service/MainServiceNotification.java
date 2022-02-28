@@ -196,6 +196,7 @@ class MainServiceNotification {
     }
 
     // TODO make all of these configurable?
+    @SuppressWarnings("FieldCanBeLocal")
     private final long NOTIFY_SUPPRESS_THRESHOLD = 5000; // suppress rapid-fire buzzing
 
     private final long[] VIBRATE_PATTERN_NOW  = {0, 100, 100, 300, 100, 300, 100, 300}; // 'J' = .---

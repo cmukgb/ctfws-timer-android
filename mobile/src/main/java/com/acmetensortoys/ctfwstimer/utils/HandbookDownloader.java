@@ -74,27 +74,24 @@ public class HandbookDownloader implements IMqttMessageListener {
                 if (self.nextSubRunnable != null) {
                     self.mHdl.removeCallbacks(self.nextSubRunnable);
                 }
-                self.nextSubRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "Resubscribing to handbook topic");
+                self.nextSubRunnable = () -> {
+                    Log.d(TAG, "Resubscribing to handbook topic");
 
-                        HandbookDownloader self2 = mSelf.get();
-                        if (self2 == null) {
-                            return;
-                        }
+                    HandbookDownloader self2 = mSelf.get();
+                    if (self2 == null) {
+                        return;
+                    }
 
-                        synchronized (self2) {
-                            try {
-                                self2.subscribe(self2.mMqc);
-                                self2.nextSubRunnable = null;
-                            } catch (MqttException mqe) {
-                                /*
-                                 * Well this stinks.  Presumably it is because
-                                 * something has gone wrong somewhere else and
-                                 * we will notice shortly.
-                                 */
-                            }
+                    synchronized (self2) {
+                        try {
+                            self2.subscribe(self2.mMqc);
+                            self2.nextSubRunnable = null;
+                        } catch (MqttException mqe) {
+                            /*
+                             * Well this stinks.  Presumably it is because
+                             * something has gone wrong somewhere else and
+                             * we will notice shortly.
+                             */
                         }
                     }
                 };
