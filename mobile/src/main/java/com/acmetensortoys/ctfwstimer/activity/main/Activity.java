@@ -34,16 +34,6 @@ public class Activity extends CtFwSActivityBase {
     private final MainService.Observer mSrvObs = new MainService.Observer() {
         @Override
         public void onMqttServerChanged(MainService.LocalBinder b, final String sURL) {
-            mTvSU.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (sURL == null) {
-                        mTvSU.setText(R.string.string_null);
-                    } else {
-                        mTvSU.setText(sURL);
-                    }
-                }
-            });
         }
 
         @Override
@@ -79,7 +69,6 @@ public class Activity extends CtFwSActivityBase {
     private MenuItem mMenuReconn;
 
     private CtFwSDisplay mCdl; // set in onStart
-    private TextView mTvSU; // set in onStart
     private TextView mTvSS; // set in onStart
     private void setServerStateText(@StringRes final int resid, Object... args) {
         final Spanned h = AndroidResourceUtils.htmlFromStrResId(getResources(), resid, args);
@@ -110,7 +99,6 @@ public class Activity extends CtFwSActivityBase {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        mTvSU = findViewById(R.id.tv_mqtt_server_uri);
         mTvSS = findViewById(R.id.tv_mqtt_state);
 
         mCdl = new CtFwSDisplay(this);

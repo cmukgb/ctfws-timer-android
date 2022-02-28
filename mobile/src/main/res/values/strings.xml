@@ -56,7 +56,6 @@
     <string name="menutext_screenwake">Keep Screen On</string>
     <string name="menutext_search">Search</string>
 
-    <string name="mqtt_uri_label">Server URI:</string>
     <string name="mqtt_state_label">Server State:</string>
     <string name="mqtt_conn">Connected but not subscribed</string>
     <string name="mqtt_disconn">Disconnected (tap to retry now)</string>
@@ -73,8 +72,6 @@
     <string name="preftext_sound_jb">Sound on Jailbreak?</string>
     <string name="preftext_sound_flag">Sound on Flag Capture?</string>
     <string name="preftext_sound_mesg">Sound on Message?</string>
-
-    <string name="string_null">&lt;&lt;null&gt;&gt;</string>
 
     <string name="wait_long">Stun 60</string>
     <string name="wait_short">Stun 10</string>
