@@ -18,7 +18,8 @@ public class CtFwSGameStateManager {
         mT = t;
     }
 
-    private static boolean carefulStrEq(String a, String b)
+    // Objects.equals() is API 19. :(
+    private static boolean carefulObjEq(Object a, Object b)
     {
         if (a == null) {
             return b == null;
@@ -31,7 +32,7 @@ public class CtFwSGameStateManager {
         }
     }
 
-    private class Game {
+    private static class Game {
         // Game time
         private boolean configured = false;
         private long startT;     // POSIX seconds for game start
@@ -53,7 +54,7 @@ public class CtFwSGameStateManager {
                     && (this.gameIx == g.gameIx)
                     && (this.endT == g.endT)
                     && (this.flagsTotal == g.flagsTotal)
-                    && (carefulStrEq(this.sides_str, g.sides_str));
+                    && (carefulObjEq(this.sides_str, g.sides_str));
         }
     }
     private Game curstate = new Game();
@@ -125,7 +126,7 @@ public class CtFwSGameStateManager {
         NR_TIME_UP,
     }
 
-    public class Now {
+    public static class Now {
         public NowRationale rationale = NowRationale.NR_NOT_CONFIG;
         public boolean stop = false;
         public boolean past = false;
@@ -172,7 +173,7 @@ public class CtFwSGameStateManager {
                 return res;
             }
             res.rationale = NowRationale.NR_GAME_IN_PROGRESS;
-            res.roundStart = curstate.startT + curstate.setupD + (res.round * curstate.roundD);
+            res.roundStart = curstate.startT + curstate.setupD + ((long)res.round * curstate.roundD);
             res.roundEnd = res.roundStart + curstate.roundD;
             res.round += 1;
             return res;
@@ -196,7 +197,7 @@ public class CtFwSGameStateManager {
     }
 
     // Game score
-    private class Flags {
+    private static class Flags {
         public boolean flagsVisible = false;
         public long flagsTime = 0;
         public BigInteger flagsRed = BigInteger.ZERO;
@@ -204,8 +205,8 @@ public class CtFwSGameStateManager {
 
         public boolean equals(Flags f) {
             return     (this.flagsVisible == f.flagsVisible)
-                    && (this.flagsRed == f.flagsRed)
-                    && (this.flagsYel == f.flagsYel);
+                    && (carefulObjEq(this.flagsRed, f.flagsRed))
+                    && (carefulObjEq(this.flagsYel, f.flagsYel));
         }
     }
     private Flags curflags = new Flags();
@@ -242,7 +243,7 @@ public class CtFwSGameStateManager {
     public BigInteger getFlagsYel() { return curflags.flagsYel; }
 
     // Informative messages handling
-    public class Msg implements Comparable<Msg> {
+    public static class Msg implements Comparable<Msg> {
         public final long when;
         public final String msg;
 
@@ -300,7 +301,7 @@ public class CtFwSGameStateManager {
     }
     public void onMessageReset(long before) {
         synchronized(this) {
-            lastMsgTimestamp = Long.max(before, lastMsgTimestamp);
+            lastMsgTimestamp = Math.max(before, lastMsgTimestamp);
             if (!msgs.isEmpty() && msgs.first().when <= before) {
                 msgs = msgs.tailSet(new Msg(before, ""));
             }
