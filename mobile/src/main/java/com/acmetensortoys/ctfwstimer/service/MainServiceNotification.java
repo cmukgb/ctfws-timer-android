@@ -43,7 +43,8 @@ class MainServiceNotification {
         Intent ni = new Intent(ms, Activity.class);
         ni.setAction(Intent.ACTION_MAIN);
         ni.addCategory(Intent.CATEGORY_LAUNCHER);
-        ni.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ni.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                  | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel nc = new NotificationChannel(

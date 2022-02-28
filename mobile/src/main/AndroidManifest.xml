@@ -25,7 +25,9 @@
         tools:ignore="UnusedAttribute">
 
         <activity android:name=".activity.main.Activity"
-            android:exported="true">
+            android:exported="true"
+            android:showWhenLocked="true"
+            android:showForAllUsers="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,14 +40,18 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.AboutActivity" />
+        <activity android:name=".activity.AboutActivity"
+            android:showWhenLocked="true"
+            android:showForAllUsers="true" />
 
         <activity android:name=".activity.SettingsActivity" />
 
         <activity
             android:name=".activity.HandbookActivity"
             android:icon="@mipmap/ic_shield_1"
-            android:label="@string/app_name_hand">
+            android:label="@string/app_name_hand"
+            android:showWhenLocked="true"
+            android:showForAllUsers="true">
 
             <!--
             <intent-filter>
