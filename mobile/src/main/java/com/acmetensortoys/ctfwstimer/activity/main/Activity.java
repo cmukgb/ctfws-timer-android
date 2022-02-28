@@ -1,7 +1,7 @@
 package com.acmetensortoys.ctfwstimer.activity.main;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
+
 import androidx.annotation.StringRes;
 import android.os.Bundle;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -96,8 +96,6 @@ public class Activity extends CtFwSActivityBase {
                 onclick_gamestate(v);
             }
         });
-
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         mTvSS = findViewById(R.id.tv_mqtt_state);
 
