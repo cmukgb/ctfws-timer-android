@@ -88,6 +88,8 @@ public class HandbookActivity extends CtFwSActivityBase {
         WebSettings wvs = mWV.getSettings();
         wvs.setBuiltInZoomControls(true);
         wvs.setDisplayZoomControls(false);
+        wvs.setAllowContentAccess(true);
+        wvs.setAllowFileAccess(true);
 
         // mWV.setFindListener()
 
