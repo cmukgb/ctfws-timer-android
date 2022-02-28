@@ -96,7 +96,7 @@ public class CtFwSGameStateManager {
             notifyConfigEtAl();
         }
     }
-    public String getLastConfigMessage() { return lastConfigMessage; }
+    public String debugGetLastConfigMessage() { return lastConfigMessage; }
     public synchronized String toMqttConfigMessage() {
         if (!curstate.configured) {
             return "none";

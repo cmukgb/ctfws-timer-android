@@ -68,12 +68,17 @@ public class AboutActivity extends CtFwSActivityBase {
         }
 
         if (mSrvBinder != null) {
-            CtFwSGameStateManager cgs = mSrvBinder.getGameState();
+            sb.append("\nServer URI: ");
+            sb.append(mSrvBinder.debugGetServerURL());
+            sb.append("\n");
 
-            sb.append("\nLast game configuration:\n  raw:       ");
-            sb.append(cgs.getLastConfigMessage());
-            sb.append("\n  parsed: ");
+            CtFwSGameStateManager cgs = mSrvBinder.getGameState();
+            sb.append("\nGame:\n  cfg msg: ");
+            sb.append(cgs.debugGetLastConfigMessage());
+            sb.append("\n  cfg dec: ");
             sb.append(cgs.toMqttConfigMessage());
+            sb.append("\n  flags dec: ");
+            sb.append(cgs.toMqttFlagsMessage());
             sb.append("\n");
         } else {
             sb.append("Null service binder\n");
