@@ -215,7 +215,7 @@ public class MainService extends Service {
 
         // Hang up on an existing connection, if we have one
         setMSE(MqttServerEvent.MSE_DISCONN);
-        if (mMqc != null) {
+        if ((mMqc != null) && mMqc.isConnected()) {
             mMqc.setCallback(null);
 
             // Observationally, it looks like .close() below isn't enough!  Deliberately
@@ -248,8 +248,12 @@ public class MainService extends Service {
             }
             mMqc.unregisterResources();
             mMqc = null;
-        } else {
+        } else if (mMqc == null) {
             Log.d("Service", "domqtt no client");
+        } else {
+            Log.d("Service", "domqtt client but not connected");
+            mMqc.unregisterResources();
+            mMqc = null;
         }
 
         // At this point, prevent the client we just shot down from making any further changes
