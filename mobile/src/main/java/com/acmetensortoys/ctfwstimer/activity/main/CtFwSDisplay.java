@@ -3,7 +3,7 @@ package com.acmetensortoys.ctfwstimer.activity.main;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -217,9 +217,8 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
                     ch_jb.setBase((now.roundEnd + 1) * 1000 - tbcf);
                     ch_jb.setCountDown(true);
                 } else {
+                    ch_jb.setTypeface(null, Typeface.ITALIC);
                     ch_jb.setBase(now.roundStart * 1000 - tbcf);
-                    ch_jb.setBackgroundColor(Color.BLACK);
-                    ch_jb.setTextColor(Color.WHITE);
                 }
                 ch_jb.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
                     @Override

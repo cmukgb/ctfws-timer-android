@@ -1,6 +1,7 @@
 package com.acmetensortoys.ctfwstimer.utils;
 
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.SystemClock;
 import android.widget.Chronometer;
@@ -56,19 +57,27 @@ public class CtFwSDisplayTinyChrono implements CtFwSGameStateManager.Observer {
                 mCh.setText(rid);
                 return;
             }
-
-            if (now.round == 0) {
-                mCh.setFormat(mRes.getString(R.string.ctfws_chrono_gamestart));
-            } else if (now.round == gs.getRounds()) {
-                mCh.setFormat(mRes.getString(R.string.ctfws_chrono_gameend));
-            } else {
-                mCh.setFormat(String.format(mRes.getString(R.string.ctfws_chrono_jailbreak),
-                                now.round));
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 mCh.setCountDown(true);
+                if (now.round == 0) {
+                    mCh.setFormat(mRes.getString(R.string.ctfws_chrono_startin));
+                } else if (now.round == gs.getRounds()) {
+                    mCh.setFormat(mRes.getString(R.string.ctfws_chrono_gameend));
+                } else {
+                    mCh.setFormat(String.format(mRes.getString(R.string.ctfws_chrono_jailbreakin),
+                            now.round));
+                }
+                mCh.setBase(now.roundEnd * 1000 - tbcf);
+            } else {
+                mCh.setTypeface(null, Typeface.ITALIC);
+                if (now.round == 0) {
+                    mCh.setFormat(mRes.getString(R.string.ctfws_chrono_setup));
+                    mCh.setBase(now.roundStart * 1000 - tbcf);
+                } else {
+                    mCh.setFormat(mRes.getString(R.string.ctfws_chrono_elapsed));
+                    mCh.setBase(gs.getFirstRoundStartT() * 1000 - tbcf);
+                }
             }
-            mCh.setBase(now.roundEnd * 1000 - tbcf);
             mCh.start();
         });
     }
