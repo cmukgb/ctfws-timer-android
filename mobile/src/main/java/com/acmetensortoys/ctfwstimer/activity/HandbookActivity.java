@@ -1,6 +1,8 @@
 package com.acmetensortoys.ctfwstimer.activity;
 
 import androidx.appcompat.app.ActionBar;
+
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -122,6 +124,18 @@ public class HandbookActivity extends CtFwSActivityBase {
                 mWV.findAllAsync(newText);
                 return false;
             }
+        });
+        WebView.FindListener wvfl = (matchix, nmatch, donecount) -> {
+            if (donecount && nmatch == 0 && sv.getQuery().length() != 0) {
+                sv.setBackgroundColor(0x20FF0000); // red tint for no results
+            } else {
+                sv.setBackgroundColor(Color.TRANSPARENT);
+            }
+        };
+        sv.setOnSearchClickListener(view -> mWV.setFindListener(wvfl));
+        sv.setOnCloseListener(() -> {
+            mWV.setFindListener(null);
+            return false;
         });
 
         return true;
