@@ -24,6 +24,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute">
 
+        <!-- The metrics database is four megabytes; for that sin alone... -->
+        <meta-data android:name="android.webkit.WebView.MetricsOptOut" android:value="true" />
+
         <activity android:name=".activity.main.Activity"
             android:exported="true"
             android:showWhenLocked="true"
