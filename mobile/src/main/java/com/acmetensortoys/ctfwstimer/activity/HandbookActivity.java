@@ -100,8 +100,8 @@ public class HandbookActivity extends CtFwSActivityBase {
         getMenuInflater().inflate(R.menu.handmenu, menu);
 
         Chronometer ch = (Chronometer) menu.findItem(R.id.hand_menu_chrono).getActionView();
+        ch.setOnClickListener(view -> finish());
         mTitleChronoObs = new CtFwSDisplayTinyChrono(getResources(), ch);
-
         if (mSrvBinder != null) {
             doRegisterObservers();
         }
