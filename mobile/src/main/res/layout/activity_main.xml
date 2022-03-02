@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/header_gamestate0" />
+            android:text="@string/header_not_config" />
 
         <TextView
             android:id="@+id/header_sides"

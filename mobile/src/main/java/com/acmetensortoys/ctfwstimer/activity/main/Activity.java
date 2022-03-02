@@ -162,7 +162,7 @@ public class Activity extends CtFwSActivityBase {
                 if (mCdl != null) {
                     tv.setText(mCdl.gameStateLabelText);
                 } else {
-                    tv.setText(R.string.header_gamestate0);
+                    tv.setText(R.string.header_not_config);
                 }
                 egg = false;
             }, 3000);

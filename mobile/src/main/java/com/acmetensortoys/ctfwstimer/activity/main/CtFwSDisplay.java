@@ -34,7 +34,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
 
     CtFwSDisplay(Activity a) {
         mAct = a;
-        gameStateLabelText = mAct.getResources().getString(R.string.header_gamestate0);
+        gameStateLabelText = mAct.getResources().getString(R.string.header_not_config);
 
         stun_short = new StunTimer(
                 (Chronometer)mAct.findViewById(R.id.ch_wait_short),
@@ -77,8 +77,7 @@ public class CtFwSDisplay implements CtFwSGameStateManager.Observer {
         }
 
         if (nr == CtFwSGameStateManager.NowRationale.NR_NOT_CONFIG) {
-            gameStateLabelText = String.format(rs.getString(R.string.header_gamestate0),
-                    rs.getString(R.string.notify_not_config));
+            gameStateLabelText = rs.getString(R.string.header_not_config);
         } else {
 
             String sfx;

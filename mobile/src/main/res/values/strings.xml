@@ -41,6 +41,7 @@
     </string>
     <string name="flags_noviz">Flag scores hidden</string>
 
+    <string name="header_not_config">Game not configured</string>
     <string name="header_gamestate0">Game State: %1$s</string>
     <string name="header_gamestateN" tools:ignore="PluralsCandidate">Game %1$d State: %2$s</string>
     <string name="header_egg">DO NOT TAP ON GLASS</string>
